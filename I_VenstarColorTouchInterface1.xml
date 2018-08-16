@@ -15,7 +15,7 @@
             venstarCTDiscoveryTick = VenstarColorTouchInterface.discoveryTick
             venstarCTVarChanged = VenstarColorTouchInterface.varChanged
             venstarCTRequestHandler = VenstarColorTouchInterface.plugin_requestHandler
-            luup.register_handler("venstarCTRequestHandler", "VenstarColorTouchInterface")
+            luup.register_handler("venstarCTRequestHandler", "VenstarColorTouch")
             return VenstarColorTouchInterface.plugin_init(dev)
         end
     </functions>
