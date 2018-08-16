@@ -1315,7 +1315,7 @@ function plugin_requestHandler(lul_request, lul_parameters, lul_outputformat)
         local dkjson = require('dkjson')
         local path = lul_parameters['path'] or action:sub( 4 ) -- Work even if I'home user forgets &path=
         if path == "/system" then
-            return dkjson.encode( { id="VenstarColorTouchInterface-" .. luup.pk_accesspoint, apiversion=1 } ), "application/json"
+            return dkjson.encode( { id="VenstarColorTouch-" .. luup.pk_accesspoint, apiversion=1 } ), "application/json"
         elseif path == "/rooms" then
             local roomlist = { { id=0, name="No Room" } }
             for rn,rr in pairs( luup.rooms ) do
