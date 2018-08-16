@@ -13,13 +13,21 @@ If you find the project useful, please consider supporting my work with a [small
 
 ## Installation ##
 
-Installation of the plug-in is through the usual mechanisms for Vera controllers: through the Vera plugin marketplace (via
-the *Apps > Install Apps* function in the Vera UI), or by downloading
-the plugin files from the project's [GitHub repository](https://github.com/toggledbits/VenstarColorTouch/releases). If you want to keep up on the latest changes, you can follow the "stable" branch of the repository.
+### Configuring Your Venstar Thermostat ###
 
-**IMPORTANT! Before a thermostat can be used with this plugin, the "Local API" setting must be enabled in the thermostat's menu (under Accessories).**
+**IMPORTANT!** Be sure to perform these configuration steps before installing the plugin. It will make your life easier.
 
-### Installation through Vera ###
+The following must be configured on your thermostat:
+
+1. Go to the "Wi-Fi Status" page (under the "Wi-Fi" menu), and confirm that you are connected to the network and have good signal strength--if not, configure or troubleshoot that before continuing (see your thermostat's documentation);
+1. Write down the MAC and IP addresses shown on the "Wi-Fi Status" page;
+1. Under the "Wi-Fi" menu, you must enable the "Local API";
+1. Under the "Wi-Fi" menu, the "API Protocol" can be either "http" or "https";
+1. The "Basic Auth" settings must both be blank/empty (the plugin currently does not support HTTP Basic Authentication).
+
+Once you have completed this configuration, confirm that your thermostat's API is reachable by opening the thermostat in a browser. For example, if your thermostat's assigned IP (from step 2) is 192.168.9.100, then you would open `http://192.168.9.100/`. You should get a short JSON response containing the string "api_ver" (it does not matter what version of the API your thermostat uses).
+
+### Installation from Vera Plugin Marketplace ###
 
 To install the plug-in from the Vera plug-in catalog:
 
@@ -38,50 +46,43 @@ launch SSDP (broadcast) discovery, to see if it can find any thermostats.
 and including bricking the controller. Proceed at your own risk.**
 
 To install from GitHub, download a release from the project's [GitHub repository](https://github.com/toggledbits/VenstarColorTouch/releases).
-Unzip it, and then upload the release files to your Vera using the uploader found in the UI under Apps > Develop apps > Luup files. You should
+Unzip it, and then upload the release files to your Vera using the uploader found in the UI under *Apps > Develop apps > Luup files*. You should
 turn off the "Restart Luup after upload" checkbox until uploading the last of the files. Turn it on for the last file.
 
-Then, go to *Apps > Develop apps > Create device*, and enter the following data exactly as shown (copy-paste recommended), leaving all other
+Next, go to *Apps > Develop apps > Create device*, and enter the following data exactly as shown (copy-paste recommended), leaving all other
 fields empty:
 
-Descripion: `Venstar ColorTouch`
-Upnp Device Filename: `D_VenstarColorTouchInterface1.xml`
-Upnp Implementation Filename: `I_VenstarColorTouchInterface1.xml`
+* Descripion: `Venstar ColorTouch`
+* Upnp Device Filename: `D_VenstarColorTouchInterface1.xml`
+* Upnp Implementation Filename: `I_VenstarColorTouchInterface1.xml`
 
 Then hit the *Create Device* button. Then reload Luup, and hard-refresh your browser. You should then see the master (interface) device.
 
+Note: you can also follow the latest development updates by periodically downloading the "stable" branch from the Github repository, and uploading
+those files to your Vera. Uploading files from the "develop" branch is not recommended.
+
 ## Device Discovery ##
 
-TBD
+**The ability of the plugin to discover your thermostats, or really function at all, requires that you first successfully complete the steps in 
+*Configuring Your Venstar Thermostat*, above, and confirm your thermostat's API is reachable.**
 
-When first installed, the Venstar ColorTouch plugin will initiate network discovery and attempt to locate your compatible thermostats. There will be a couple of Luup reloads during this process as devices are found, and as is frequently the case in Vera, a full refresh/cache flush of your browser will be necessary to consistently display all of the discovered devices.
+When first installed, the Venstar ColorTouch plugin will initiate SSDP discovery and attempt to locate your compatible thermostats. There will be a couple of Luup reloads during this process as devices are found, and as is frequently the case in Vera, a full refresh/cache flush of your browser will be necessary to consistently display all of the discovered devices.
 
-The performance of network discovery has varied a bit between versions of Vera firmware. If your installation doesn't discovery any thermostats, don't panic! There are a few things you can do.
+The performance of SSDP discovery has varied a bit between versions of Vera firmware. If your installation doesn't discover any thermostats, don't panic! There are two alternatives: MAC discovery, and IP discovery.
 
-First, make sure you have enabled the "Local API" in the thermostat's settings. This is found in the "Accessories" menu of the thermostat. Also make sure that thermostat is connected to your WiFi network. You do not need to have the thermostat connected to any Venstar cloud service.
+For MAC discovery, you will need to know the MAC address of the device (from step 2 of *Configuring Your Venstar Thermostat*, above). To start MAC discovery, go into the interface device's control panel, and enter the MAC address in the field next to the "Discover MAC" button. Then press that button. If the device can be found by its MAC address, you'll see a message to that effect, and Luup will reload. Make sure to do a hard-reload of your browser before proceeding.
 
-There are two ways to do discovery other than the SSDP broadcast. The more reliable is MAC discovery. To do this, you will need to know the MAC address of the device. This is a network hardware address that is unique to every device, and is printed on a label on the device, as well as on its packaging. It may also be visible in the network status in the device menus.
-
-To start MAC discovery, go into the interface device's control panel, and enter the MAC address in the field next to the "Discover MAC" button. Then press that button. If the device can be found by its MAC address, you'll see a message to that effect, and Luup will reload. Make sure to do a hard-reload of your browser before proceeding.
-
-If MAC discovery fails, the final option is IP discovery. You will need to know the current IP address of the device. The easiest way to get this is usually to look at the network status in the thermostat's menu. Enter the IP address in the field next to the "Discover IP" button, and press the button. If the thermostat can be contact on that IP address, the plugin will configure it.
-
-Both MAC and IP discovery assume that the thermostat's API is configured for port 80. If the thermostat is configured to serve the API on a different port, you can use the "ip:port" form of IP address in IP discovery to direct the plugin to try that port. The port cannot currently be set when using MAC discovery.
+If MAC discovery fails, the final option is IP discovery. You will need to know the current IP address of the device (which you should have from step 2 of *Configuring Your Venstar Thermostat*, above). Enter the IP address in the field next to the "Discover IP" button. If you have configured the "API Protocol" in the thermostat settings for HTTPS, add ":443" to the end of the IP address. Then press the "Discover IP" button. If the thermostat can be contacted on that IP address, the plugin will configure it.
 
 Repeat these discovery steps for each thermostat. It is recommended that you always start with broadcast (SSDP) discovery, as this gives the plugin important configuration information up front. When it works, it gives the best result.
 
 ## Operation ##
 
-The plugin implements the interface a standard dual heating/cooling auto-changeover thermostat. It will restrict functions to what the thermostat advertises is available, so if the connected thermostat cannot do auto-changeover, for example, that option will not operate on the interface.
+The plugin implements the interface a standard dual heating/cooling auto-changeover thermostat. It will restrict functions to those which the thermostat advertises as available, so, for example, if the connected thermostat cannot do auto-changeover mode, that option will not operate on the interface (it will still be shown).
 
 The plugin also enforces limits on the range and separation of the heating and cooling setpoints. These are determined by the thermostat. For example, if the cooling setpoint is 74F, and the thermostat requires a minimum separation of two degrees between setpoints, setting the heating setpoint to 73F will cause the cooling setpoint to be moved up to 75F.
 
 ## Actions ##
-
-The plugin creates two device types and services:
-
-1. Type , service `urn:toggledbits-com:serviceId:VenstarColorTouchInterface1`, which 
-1. Type , service `urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1`, which contains the state and actions associated with each thermostat.
 
 ### Interface Service Actions and Variables ###
 
@@ -108,7 +109,7 @@ This action starts discovery for a given IP address. If communication with the d
 This action enables debugging to the Vera log, which increases the verbosity of the plugins information output. It takes a single
 parameter, `debug`, which must be either 0 or 1 in numeric or string form.
 
-### Variable: RefreshInterval ###
+### State Variable: RefreshInterval ###
 
 `RefreshInterval` is the time between full queries for data from the gateway. Periodically, the plug-in will make a query for all current
 gateway status parameters, to ensure that the Vera plug-in and UI are in sync with the gateway. This value is in seconds, and the default
@@ -120,18 +121,22 @@ In addition to the above services, the VenstarColorTouch plug-in implements the 
 
 * `urn:upnp-org:serviceId:HVAC_UserOperatingMode1`: `SetModeTarget` (Off, AutoChangeOver, HeatOn, CoolOn), `GetModeTarget`, `GetModeStatus`
 * `urn:upnp-org:serviceId:HVAC_FanOperatingMode1`: `SetMode` (Auto, ContinuousOn), `GetMode`
-* `urn:upnp-org:serviceId:TemperatureSetpoint1`: `SetCurrentSetpoint`, `GetCurrentSetpoint`
+* `urn:upnp-org:serviceId:TemperatureSetpoint1`: `SetApplication`, `SetCurrentSetpoint`, `GetCurrentSetpoint` (UPnP standard)
+* `urn:upnp-org:serviceId:TemperatureSetpoint1_Heat` and `_Cool`: `SetCurrentSetpoint`, `GetCurrentSetpoint` (Vera's version of UPnP)
 
-The plug-in also provides many of the state variables behind these services. In addition, the plug-in maintains the `CurrentTemperature` 
+The `SetCurrentSetpoint` action function a bit differently from UPnP, and this is a Vera-ism. When the action is called with the `urn:upnp-org:serviceId:TemperatureSetpoint1_Heat`
+service, the heating setpoint is changed, and when called with the `urn:upnp-org:serviceId:TemperatureSetpoint1_Cool` service, the cooling setpoint is changed. It is also possible to use the UPnP `SetApplication` and `SetCurrentSetpoint` method in the standard `urn:upnp-org:serviceId:TemperatureSetpoint1` service. An enhancement for this plugin is that the new setpoint can be specified with units (e.g. "15C" or "72F"), to allow a setpoint to be set in units other than that which the thermostat is configured to display.
+
+The plug-in also provides many of the common state variables behind these services. In addition, the plug-in maintains the `CurrentTemperature` 
 state variable of the `urn:upnp-org:serviceId:TemperatureSensor1` service (current ambient temperature as reported by the gateway). If humidity information is returned by the thermostat, the `CurrentLevel` state variable of the `urn:micasaverde-com:serviceId:HumiditySensor1` service is also available.
 
 ## Vera Android and iOS Applications ##
 
-Due to limitations of the Vera Android and iOS (iPhone) apps, most plugin devices do not appear in those apps, and this plugin is no exception. This limitation should be familiar to most Vera users.
+Due to limitations of the Vera mobile apps, most plugin devices do not appear in those apps, and this plugin is no exception. This limitation should be familiar to most Vera users.
 
 ## ImperiHome Integration ##
 
-ImperiHome does not, by default, detect many plugin devices, including this one. However, it is possible to configure this plugin
+Like the Vera mobile apps, ImperiHome does not, by default, detect many plugin devices, including this one. However, it is possible to configure this plugin
 for use with ImperiHome, as the plugin implements the [ImperiHome ISS API](http://dev.evertygo.com/api/iss).
 
 To connect to ImperiHome:
