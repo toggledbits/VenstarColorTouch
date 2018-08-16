@@ -21,8 +21,8 @@ The following must be configured on your thermostat:
 
 1. Go to the "Wi-Fi Status" page (under the "Wi-Fi" menu), and confirm that you are connected to the network and have good signal strength--if not, configure or troubleshoot that before continuing (see your thermostat's documentation);
 1. Write down the MAC and IP addresses shown on the "Wi-Fi Status" page;
-1. Under the "Wi-Fi" menu, you must enable the "Local API";
-1. Under the "Wi-Fi" menu, the "API Protocol" can be either "http" or "https";
+1. Under the "Wi-Fi" menu, turn on the "Local API";
+1. Under the "Wi-Fi" menu, the "API Protocol" must be set to "http" (HTTPS is not yet supported);
 1. The "Basic Auth" settings must both be blank/empty (the plugin currently does not support HTTP Basic Authentication).
 
 Once you have completed this configuration, confirm that your thermostat's API is reachable by opening the thermostat in a browser. For example, if your thermostat's assigned IP (from step 2) is 192.168.9.100, then you would open `http://192.168.9.100/`. You should get a short JSON response containing the string "api_ver" (it does not matter what version of the API your thermostat uses).
