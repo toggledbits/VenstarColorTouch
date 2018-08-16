@@ -22,10 +22,11 @@ The following must be configured on your thermostat:
 1. Go to the "Wi-Fi Status" page (under the "Wi-Fi" menu), and confirm that you are connected to the network and have good signal strength--if not, configure or troubleshoot that before continuing (see your thermostat's documentation);
 1. Write down the MAC and IP addresses shown on the "Wi-Fi Status" page;
 1. Under the "Wi-Fi" menu, turn on the "Local API";
-1. Under the "Wi-Fi" menu, the "API Protocol" must be set to "http" (HTTPS is not yet supported);
-1. The "Basic Auth" settings must both be blank/empty (the plugin currently does not support HTTP Basic Authentication).
+1. Under the "Wi-Fi" menu, the "API Protocol" may be either HTTP or HTTPS, but use HTTP for now;
+1. The "Basic Auth" settings must both be blank/empty during discovery (you can set them later, see below);
+1. Power-cycle the thermostat.
 
-Once you have completed this configuration, confirm that your thermostat's API is reachable by opening the thermostat in a browser. For example, if your thermostat's assigned IP (from step 2) is 192.168.9.100, then you would open `http://192.168.9.100/`. You should get a short JSON response containing the string "api_ver" (it does not matter what version of the API your thermostat uses).
+Once you have completed these steps, confirm that your thermostat's API is reachable by opening the thermostat in a browser. For example, if your thermostat's assigned IP (from step 2) is 192.168.9.100, then you would open `http://192.168.9.100/`. You should get a short JSON response containing the string "api_ver" (it does not matter what version of the API your thermostat uses).
 
 ### Installation from Vera Plugin Marketplace ###
 
@@ -149,6 +150,19 @@ To connect to ImperiHome:
 1. Click **Next** to connect.
 
 ImperiHome should then populate your groups with your Venstar ColorTouch plugin devices.
+
+## Improving Security -- Basic Auth and HTTPS ##
+
+Venstar ColorTouch thermostats with newer firmware offer HTTP Basic Authentication. While this is generally regarded as weak,
+its strength is improved by using it together with HTTPS. To configure:
+
+1. In the thermostat's Wi-Fi menu, set the API Protocol to HTTPS;
+1. Set the HTTP Authentication username and password;
+1. Power-cycle the thermostat;
+1. Open the Vera device control panel for the thermostat, and go to *Advanced > Variables*;
+1. Set the `HTTPUser` and `HTTPPassword` variables to exactly the username and password assigned to the thermostat;
+1. Modify the `APIPath` variable so that the protocol is "https" and the port is 443. For example, if the value was previously `http://192.168.9.100:80/` it would now be `https://192.168.9.100:443/`;
+1. Close the control panel and restart Luup.
 
 ## Reporting Bugs/Enhancement Requests ##
 
