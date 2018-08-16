@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+    <specVersion>
+        <major>1</major>
+        <minor>0</minor>
+    </specVersion>
+    <device>
+        <deviceType>urn:schemas-toggledbits-com:device:VenstarColorTouchInterface:1</deviceType>
+        <staticJson>D_VenstarColorTouchInterface1.json</staticJson>
+        <friendlyName>Venstar ColorTouch</friendlyName>
+        <manufacturer>Patrick H. Rigney (rigpapa)</manufacturer>
+        <manufacturerURL>http://www.toggledbits.com/venstar/</manufacturerURL>
+        <modelDescription></modelDescription>
+        <modelName>Venstar ColorTouch</modelName>
+        <handleChildren>1</handleChildren>
+        <Category_Num>5</Category_Num>
+        <Subcategory_Num>1</Subcategory_Num>
+        <serviceList>
+          <service>
+            <serviceType>urn:schemas-toggledbits-com:service:VenstarColorTouchInterface:1</serviceType>
+            <serviceId>urn:toggledbits-com:serviceId:VenstarColorTouchInterface1</serviceId>
+            <SCPDURL>S_VenstarColorTouchInterface1.xml</SCPDURL>
+          </service>
+          <service>
+            <serviceType>urn:schemas-micasaverde-com:service:HaDevice:1</serviceType>
+            <serviceId>urn:micasaverde-com:serviceId:HaDevice1</serviceId>
+            <SCPDURL>S_HaDevice1.xml</SCPDURL>
+          </service>
+        </serviceList>
+        <implementationList>
+          <implementationFile>I_VenstarColorTouchInterface1.xml</implementationFile>
+        </implementationList>
+    </device>
+</root>

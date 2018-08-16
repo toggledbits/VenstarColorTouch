@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<scpd xmlns="urn:schemas-upnp-org:service-1-0">
+    <specVersion>
+        <major>1</major>
+        <minor>0</minor>
+    </specVersion>
+    <serviceStateTable>
+        <stateVariable sendEvents="yes">
+            <name>Failure</name>
+            <dataType>ui1</dataType>
+            <defaultValue>0</defaultValue>
+        </stateVariable>
+    </serviceStateTable>
+    <actionList>
+        <action>
+            <name>SetHomeAway</name>
+            <argumentList>
+                <argument>
+                    <name>newHomeAwayState</name>
+                    <direction>in</direction>
+                </argument>
+            </argumentList>
+        </action>
+    </actionList>
+</scpd>

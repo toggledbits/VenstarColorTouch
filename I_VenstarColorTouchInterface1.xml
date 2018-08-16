@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<implementation>
+    <functions>
+        -- -------------------------------------------------------------------------------------------------------------------------
+        -- VenstarColorTouchInterface -- Venstar ColorTouch interface for Vera/MiOS
+        --
+        -- Copyright 2017,2018 Patrick Rigney, All Rights Reserved
+        --
+        -- See http://www.toggledbits.com/venstar/
+        -- -------------------------------------------------------------------------------------------------------------------------
+        function startVenstarCTGateway(dev)
+            luup.log("VenstarColorTouchInterface Plugin START-UP!")
+            VenstarColorTouchInterface = require("L_VenstarColorTouchInterface1")
+            venstarCTDeviceTick = VenstarColorTouchInterface.deviceTick
+            venstarCTDiscoveryTick = VenstarColorTouchInterface.discoveryTick
+            venstarCTVarChanged = VenstarColorTouchInterface.varChanged
+            venstarCTRequestHandler = VenstarColorTouchInterface.plugin_requestHandler
+            luup.register_handler("venstarCTRequestHandler", "VenstarColorTouchInterface")
+            return VenstarColorTouchInterface.plugin_init(dev)
+        end
+    </functions>
+    <startup>startVenstarCTGateway</startup>
+    <actionList>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
+            <name>SetModeTarget</name>
+            <job>
+                -- Change the operating to one of Off, HeatOn, CoolOn, AutoChangeOver
+                -- receives NewModeTarget; variables ModeTarget/ModeStatus
+                local newMode = lul_settings.NewModeTarget
+                VenstarColorTouchInterface.actionSetModeTarget( lul_device, newMode )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
+            <name>GetModeTarget</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
+            <name>GetModeStatus</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+            </run>
+        </action>
+		<action>
+			<serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
+			<name>SetEnergyModeTarget</name>
+			<job>
+                local newMode = lul_settings.NewEnergyModeTarget
+                VenstarColorTouchInterface.actionSetEnergyModeTarget( lul_device, newMode )
+                return 4,0
+			</job>
+		</action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
+            <name>GetEnergyModeTarget</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
+            <name>GetEnergyModeStatus</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:HVAC_FanOperatingMode1</serviceId>
+            <name>SetMode</name>
+            <job>
+                -- Sets fan operating mode to one of Auto, ContinousOn, PeriodicOn
+                -- receives NewMode; related Mode, FanStatus ("On", "Off")
+                VenstarColorTouchInterface.actionSetFanMode( lul_device, lul_settings.NewMode )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:HVAC_FanOperatingMode1</serviceId>
+            <name>GetMode</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+                -- See also VenstarColorTouchThermostat1/GetCurrentFanSpeed
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:TemperatureSetpoint1</serviceId>
+            <name>SetApplication</name>
+            <run>
+                -- Set application for setpoint. See http://upnp.org/specs/ha/UPnP-ha-TemperatureSetpoint-v1-Service.pdf
+                -- receives NewApplication; related Application
+                luup.variable_set( "urn:upnp-org:serviceId:TemperatureSetpoint1", "Application", lul_settings.NewApplication )
+                return true
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:TemperatureSetpoint1</serviceId>
+            <name>GetApplication</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:TemperatureSetpoint1</serviceId>
+            <name>SetCurrentSetpoint</name>
+            <job>
+                -- Set temperature setpoint.
+                -- See http://upnp.org/specs/ha/UPnP-ha-TemperatureSetpoint-v1-Service.pdf
+                VenstarColorTouchInterface.actionSetCurrentSetpoint( lul_device, lul_settings.NewCurrentSetpoint )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:TemperatureSetpoint1</serviceId>
+            <name>GetCurrentSetpoint</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:TemperatureSetpoint1_Heat</serviceId>
+            <name>SetCurrentSetpoint</name>
+            <job>
+                -- Set temperature setpoint for heating (convenience function to mimic other devices, but this is incompletely defined).
+                VenstarColorTouchInterface.actionSetCurrentSetpoint( lul_device, lul_settings.NewCurrentSetpoint, "Heating" )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:TemperatureSetpoint1_Heat</serviceId>
+            <name>GetCurrentSetpoint</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:TemperatureSetpoint1_Cool</serviceId>
+            <name>SetCurrentSetpoint</name>
+            <job>
+                -- Set temperature setpoint for cooling (convenience function to mimic other devices, but this is incompletely defined).
+                VenstarColorTouchInterface.actionSetCurrentSetpoint( lul_device, lul_settings.NewCurrentSetpoint, "Cooling" )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:upnp-org:serviceId:TemperatureSetpoint1_Cool</serviceId>
+            <name>GetCurrentSetpoint</name>
+            <run>
+                -- Luup takes care of returning relatedStateVariable
+            </run>
+        </action>
+        <action>
+            <serviceId>urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1</serviceId>
+            <name>SetHomeAway</name>
+            <job>
+                VenstarColorTouchInterface.actionSetHomeAway( lul_device, lul_settings.newHomeAwayState )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:toggledbits-com:serviceId:VenstarColorTouchInterface1</serviceId>
+            <name>RunDiscovery</name>
+            <job>
+                VenstarColorTouchInterface.actionRunDiscovery( lul_device )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:toggledbits-com:serviceId:VenstarColorTouchInterface1</serviceId>
+            <name>DiscoverMAC</name>
+            <job>
+                VenstarColorTouchInterface.actionDiscoverMAC( lul_device, lul_settings.MACAddress )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:toggledbits-com:serviceId:VenstarColorTouchInterface1</serviceId>
+            <name>DiscoverIP</name>
+            <job>
+                VenstarColorTouchInterface.actionDiscoverIP( lul_device, lul_settings.IPAddress )
+                return 4,0
+            </job>
+        </action>
+        <action>
+            <serviceId>urn:toggledbits-com:serviceId:VenstarColorTouchInterface1</serviceId>
+            <name>SetDebug</name>
+            <run>
+                VenstarColorTouchInterface.actionSetDebug( lul_device, lul_settings.debug )
+            </run>
+        </action>
+    </actionList>
+</implementation>
