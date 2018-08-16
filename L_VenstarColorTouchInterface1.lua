@@ -15,7 +15,7 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
-local _PLUGIN_VERSION = "1.0develop180816.1020"
+local _PLUGIN_VERSION = "1.0develop180816.1545"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
@@ -84,7 +84,7 @@ local function trace( typ, msg )
     local body = json.encode(t)
     tHeaders["Content-Type"] = "application/json"
     tHeaders["Content-Length"] = string.len(body)
-
+    
     -- Make the request.
     local respBody, httpStatus, httpHeaders
     http.TIMEOUT = 10
@@ -430,6 +430,15 @@ local function doRequest(method, url, tHeaders, body, dev)
     else
         src = nil
     end
+    
+    -- Basic Auth
+    local baUser = luup.variable_get( DEVICESID, "HTTPUser", dev ) or ""
+    if baUser ~= "" then
+        local baPass = luup.variable_get( DEVICESID, "HTTPPassword", dev ) or ""
+        baUser = baUser .. ":" .. baPass
+        local mime = require("mime")
+        tHeaders.Authorization = "Basic " + mime.b64( baUser )
+    end
 
     -- Make the request.
     local respBody, httpStatus
@@ -462,6 +471,7 @@ local function doRequest(method, url, tHeaders, body, dev)
         -- Success response with no data, take shortcut.
         return true, respBody, 200
     end
+    if httpStatus == 401 then L{level=1,msg="Thermostat responded with authentication failure; check that HTTPUser and HTTPPassword agree with the thermostat's Basic Authentication settings."} end
     return false, respBody, httpStatus
 end
 
@@ -693,15 +703,14 @@ local function handleDiscoveryMessage( msg )
     L("Children done. Reload coming!")
 end
 
--- Fake a discovery message with the MAC and IP passed.
-local function passGenericDiscovery( mac, ip, port, dev )
-    D("passGenericDiscovery(%1,%2,%3,%4)", mac, ip, port, dev)
+-- Fake a discovery message (used for non-SSDP discoveries).
+local function passGenericDiscovery( url, mac, ip, port, dev )
+    D("passGenericDiscovery(%1,%2,%3,%4,%5)", url, mac, ip, port, dev)
     mac = string.gsub( mac or "", "[%.:-]", "" ) -- remove various delimiters
     local nn = "ColorTouch " .. string.sub(mac, -6)
     mac = string.gsub( mac, "(..)(..)(..)(..)(..)(..)", "%1:%2:%3:%4:%5:%6" )
-    handleDiscoveryMessage(
-        string.format("HTTP/1.1 200 OK\r\nCache-Control: max-age=300\r\nST: colortouch:ecp\r\nLocation: http://%s:%s\r\nUSN: ecp:%s:name:%s", ip, tostring(port), mac, nn),
-        gateway )
+    handleDiscoveryMessage( string.format("HTTP/1.1 200 OK\r\nCache-Control: max-age=300\r\nST: colortouch:ecp\r\nLocation: %s\r\nUSN: ecp:%s:name:%s", 
+            url, mac, nn) )
 end
 
 function deviceTick( dargs )
@@ -752,6 +761,8 @@ local function deviceRunOnce( dev )
         initVar(DEVICESID, "CurrentSetpoint", "Heating", dev)
         initVar(DEVICESID, "HomeAwayMode", "Home", dev)
         initVar(DEVICESID, "Failure", 0, dev )
+        initVar(DEVICESID, "HTTPUser", "", dev)
+        initVar(DEVICESID, "HTTPPassword", "", dev)
 
         initVar(OPMODE_SID, "ModeTarget", MODE_OFF, dev)
         initVar(OPMODE_SID, "ModeStatus", MODE_OFF, dev)
@@ -831,38 +842,50 @@ local function deviceStart( dev )
     return true, "OK", luup.devices[dev].description
 end
 
+local function tryTarget( mac, ip, port, dev )
+    D("tryTarget(%1,%2,%3,%4)", mac, ip, port, dev)
+    gatewayStatus( "Trying " .. ip )
+
+    -- Try various combinations of protocol and port
+    for _,try in ipairs({ { proto="http",port=port },{ proto="https",port=port },{ proto="http",port=80 },{ proto="https",port=443 } }) do
+        local url = string.format("%s://%s:%d/", try.proto, ip, try.port)
+        D("tryDiscoveryTarget() trying %1", url)
+        local status,body,httpStatus = doRequest( "GET", url, {}, nil, dev )
+        D("tryDiscoveryTarget() result %1,%2,%3", status, body, httpStatus)
+        if httpStatus == 401 then
+            -- May be successful, but needs auth turned off.
+            gatewayStatus("Please turn off HTTP Authentication in the device configuration during discovery.")
+            return
+        elseif status then
+            local data,_,err = json.decode( body )
+            D("discoveryByIP() json %1: %2", err, data)
+            if not err and data.api_ver ~= nil then
+                gatewayStatus( "Registering thermostat" )
+                passGenericDiscovery( url, mac, ip, port, dev )
+                return
+            else
+                gatewayStatus( "Not ColorTouch thermostat" )
+                L({level=1,msg="Device at %1 responded but not as a ColorTouch thermostat"}, url)
+                return
+            end
+        end
+    end
+    L({level=1,msg="Device at %1 could not be reached; check that 'Local API' is enabled in thermostat's Wi-Fi settings"}, url)
+    gatewayStatus( "Can't connect to " .. ip )
+end
+
 local function discoveryByMAC( mac, dev )
     D("discoveryByMAC(%1,%2)", mac, dev)
     local port = 80 -- ??? use :port like IP?
     gatewayStatus( "Searching for " .. mac )
     local res = getIPforMAC( mac, dev )
-    if res ~= nil then
+    if res ~= nil and #res > 0 then
         local first = res[1]
         D("discoveryByMAC() found IP %1 for MAC %2", first.ip, first.mac)
-        gatewayStatus( "Contacting " .. first.ip )
-        local status,body,httpStatus = doRequest( "GET", string.format("http://%s:%d/", first.ip, port), {}, nil, dev )
-        D("discoveryByMAC() response from %1 %2 is %3", first.ip, httpStatus, body)
-        if status then
-            local data,_,err = json.decode( body )
-            D("discoveryByMAC() json %1: %2", err, data)
-            if not err and data.api_ver ~= nil then
-                D("discoveryByMAC() valid response from %2 (%1)", first.mac, first.ip)
-                gatewayStatus( "Registering thermostat" )
-                passGenericDiscovery( first.mac, first.ip, port, dev )
-                return
-            else
-                gatewayStatus( "Not ColorTouch thermostat" )
-                L({level=1,msg="Device at %1 did not respond as a ColorTouch thermostat"}, first.ip)
-                return
-            end
-        else
-            gatewayStatus( "Refused by " .. first.ip )
-            L({level=1,msg="Device at %1 could not be queried, may not be ColorTouch thermostat or 'Local API' not enabled in its settings"}, first.ip)
-            return
-        end
+        return tryTarget( first.mac, first.ip, port, dev )
     end
     L({level=1,msg="Could not ARP %1 for discovery. Please make sure the device is up on the LAN"}, mac)
-    gatewayStatus( "Device not found with MAC " .. mac )
+    gatewayStatus( mac .. " not found" )
     return false
 end
 
@@ -876,33 +899,15 @@ local function discoveryByIP( ipp, dev )
         ipaddr = ipp
         port = 80
     end
-    gatewayStatus( "Contacting " .. ipp )
+    gatewayStatus( "Searching for " .. ipaddr )
     local res = getMACforIP( ipaddr, dev )
-    if res ~= nil then
+    if res ~= nil and #res > 0 then
         local first = res[1]
-        local status,body,httpStatus = doRequest( "GET", string.format("http://%s:%d/", ipaddr, port), {}, nil, dev )
-        D("discoveryByIP() response from %1 %2 is %3", ipp, httpStatus, body)
-        if status then
-            local data,_,err = json.decode( body )
-            D("discoveryByIP() json %1: %2", err, data)
-            if not err and data.api_ver ~= nil then
-                D("discoveryByIP() found MAC %1 for IP %2", first.mac, first.ip)
-                gatewayStatus( "Registering thermostat" )
-                passGenericDiscovery( first.mac, first.ip, port, dev )
-                return
-            else
-                gatewayStatus( "Not ColorTouch thermostat" )
-                L({level=1,msg="Device at %1 did not respond as a ColorTouch thermostat"}, ipaddr)
-                return
-            end
-        else
-            gatewayStatus( "Not ColorTouch thermostat" )
-            L({level=1,msg="Device at %1 could not be queried, may not be ColorTouch thermostat or 'Local API' not enabled in its settings"}, ipaddr)
-            return
-        end
+        return tryTarget( first.mac, first.ip, port, dev )
     end
-    L({level=1,msg="Could not RARP %1 for discovery. Please make sure the device is up on the LAN"}, ipaddr)
-    gatewayStatus( "Search failed" )
+    L({level=1,msg="Unable to locate MAC for %1. Device may be unreachable/offline."}, ipaddr)
+    gatewayStatus(ipaddr .. " unreachable")
+    return false
 end
 
 -- Tick for UDP discovery.
@@ -927,7 +932,7 @@ function discoveryTick( dargs )
             local resp, peer, port = udp:receivefrom()
             if resp ~= nil then
                 D("discoveryTick() received response from %1:%2", peer, port)
-                handleDiscoveryMessage( resp, dev )
+                handleDiscoveryMessage( resp )
             end
         until resp == nil
 
