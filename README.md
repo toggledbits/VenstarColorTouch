@@ -87,8 +87,8 @@ Icon | Meaning
 ---- | -------
 ![Off](https://www.toggledbits.com/assets/venstar/colortouch_mode_off.png) | Thermostat is OFF
 ![Idle](https://www.toggledbits.com/assets/venstar/colortouch_mode_idle.png) | Thermostat is IDLE
-![Cooling](https://www.toggledbits.com/assets/venstar/colortouch_mode_cooling.png) | Thermostat is COOLING
-![Heating](https://www.toggledbits.com/assets/venstar/colortouch_mode_heating.png) | Theromostat is HEATING
+![Cooling](https://www.toggledbits.com/assets/venstar/colortouch_mode_cool.png) | Thermostat is COOLING
+![Heating](https://www.toggledbits.com/assets/venstar/colortouch_mode_heat.png) | Theromostat is HEATING
 ![FanOnly](https://www.toggledbits.com/assets/venstar/colortouch_mode_fan.png) | Fan is running (no heating or cooling)
 ![Lockout](https://www.toggledbits.com/assets/venstar/colortouch_mode_lockout.png) | The thermostat is locked out
 ![Error](https://www.toggledbits.com/assets/venstar/colortouch_failed.png) | The thermostat is indicating an error or the plugin cannot communicate with the thermostat
