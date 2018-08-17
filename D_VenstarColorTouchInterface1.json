@@ -65,7 +65,7 @@
                     "top": "0.5",
                     "left": "0",
                     "LabelSymbol": {
-                        "lang_tag": "wmp_status",
+                        "lang_tag": "colortouch_status",
                         "text": "Status"
                     },
                     "Display": {
@@ -76,14 +76,14 @@
                         "Service": "urn:toggledbits-com:serviceId:VenstarColorTouchInterface1",
                         "Variable": "DisplayStatus"
                     },
-                    "ControlCode": "wmp_status"
+                    "ControlCode": "colortouch_status"
                 },
                 {
                     "ControlType": "button",
                     "top": "2",
                     "left": "0",
                     "Label": {
-                        "lang_tag": "cmd_wmp_discovery",
+                        "lang_tag": "cmd_colortouch_discovery",
                         "text": "Run Discovery"
                     },
                     "Display": {
@@ -104,8 +104,8 @@
                     "top": "0.2",
                     "left": "0",
                     "Label": {
-                        "lang_tag": "wmp_ex_discovery",
-                        "text": "This form of discovery uses a network broadcast to try to find compatible Venstar ColorTouch devices in your local network. Try this first."
+                        "lang_tag": "colortouch_ex_discovery",
+                        "text": "This form of discovery uses a network multicast to try to find compatible Venstar ColorTouch devices in your local network. Try this first."
                     },
                     "Display": {
                         "Top": 30,
@@ -130,7 +130,7 @@
                     "top": "2",
                     "left": "0",
                     "Label": {
-                        "lang_tag": "cmd_wmp_discmac",
+                        "lang_tag": "cmd_colortouch_discmac",
                         "text": "Discover MAC"
                     },
                     "Display": {
@@ -154,8 +154,8 @@
                     "top": "0.2",
                     "left": "0",
                     "Label": {
-                        "lang_tag": "wmp_ex_discmac",
-                        "text": "If the broadcast discovery doesn't find your device, enter its MAC address here and press \"Discover MAC\". The MAC address can be found on the label on the back of the device, often under a barcode."
+                        "lang_tag": "colortouch_ex_discmac",
+                        "text": "If the multicast discovery doesn't find your device, enter its MAC address here and press \"Discover MAC\". The MAC address can be found in \"Wi-Fi Status\" on the thermostat."
                     },
                     "Display": {
                         "Top": 120,
@@ -180,7 +180,7 @@
                     "top": "2",
                     "left": "0",
                     "Label": {
-                        "lang_tag": "cmd_wmp_discip",
+                        "lang_tag": "cmd_colortouch_discip",
                         "text": "Discover IP"
                     },
                     "Display": {
@@ -204,7 +204,7 @@
                     "top": "0.2",
                     "left": "0",
                     "Label": {
-                        "lang_tag": "wmp_ex_discip",
+                        "lang_tag": "colortouch_ex_discip",
                         "text": "If your Venstar Colortouch device has a fixed IP address (for example, via a DHCP reservation), enter its IP address here and press \"Discover IP\"."
                     },
                     "Display": {
@@ -214,15 +214,13 @@
                         "Height": 48
                     }
                 },
-
-
                 {
                     "ControlType": "label",
                     "top": "0.2",
                     "left": "0",
                     "Label": {
-                        "lang_tag": "wmp_gw_about",
-                        "text": "<b>IMPORTANT! You must enable \"Local API\" in the Accessories menu of your thermostat(s)!</b> Your Venstar ColorTouch thermostat(s) must also be powered on and connected to your WiFi network for any of these forms of discovery to work. If discovery is not finding your device, power-cycle the device, check the menu setting, and try again. If it still fails, your device may not be compatible with this plugin.<br/>&nbsp;<br/>Venstar ColorTouch Interface ver 1.0develop &#169; Patrick H. Rigney, All Rights Reserved. Docs and license at <a href=\"http://www.toggledbits.com/venstar\" target=\"_blank\">https://www.toggledbits.com/venstar</a>. Please consider <a href=\"https://www.toggledbits.com/donate\" target=\"_blank\">making a small donation</a> for ongoing support of this project."
+                        "lang_tag": "colortouch_gw_about",
+                        "text": "<b>IMPORTANT! You must enable \"Local API\" in the Accessories menu of your thermostat(s)!</b> Other settings also apply. Please refer to the <a href=\"https://www.toggledbits.com/venstar\" target=\"_blank\">documentation</a> for setup instructions for your thermostat.<br/>&nbsp;<br/>Venstar ColorTouch Interface ver 1.0develop &#169; Patrick H. Rigney, All Rights Reserved. Information and license at <a href=\"http://www.toggledbits.com/venstar\" target=\"_blank\">https://www.toggledbits.com/venstar</a>. Please consider <a href=\"https://www.toggledbits.com/donate\" target=\"_blank\">making a small donation</a> for ongoing support of this project."
                     },
                     "Display": {
                         "Top": 260,
