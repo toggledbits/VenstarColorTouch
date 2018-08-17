@@ -774,7 +774,7 @@ local function deviceStart( dev )
     devData[dk] = {}
     local s = luup.variable_get( DEVICESID, "sysinfo", dev ) or ""
     if s ~= "" then
-        local data,pos,err = json.decode( s )
+        local data,_,err = json.decode( s )
         if not err then
             devData[dk].sysinfo = data
         end
@@ -833,7 +833,7 @@ local function tryTarget( mac, ip, port, dev )
             end
         end
     end
-    L({level=1,msg="Device at %1 could not be reached; check that 'Local API' is enabled in thermostat's Wi-Fi settings"}, url)
+    L({level=1,msg="Device at %1 could not be reached; check that 'Local API' is enabled in thermostat's Wi-Fi settings"}, ip)
     gatewayStatus( "Can't connect to " .. ip )
 end
 
@@ -982,7 +982,6 @@ local function sendModeAndSetpoints( dev )
     local mode = luup.variable_get( OPMODE_SID, "ModeTarget", dev )
     local heatSP = getVarNumeric( "CurrentSetpoint", devData[dk].sysinfo.minHeatTemp, dev, SETPOINT_HEAT_SID )
     local coolSP = getVarNumeric( "CurrentSetpoint", devData[dk].sysinfo.maxCoolTemp, dev, SETPOINT_COOL_SID )
-    local cfUnits = luup.variable_get( DEVICESID, "ConfiguredUnits", dev ) or "F"
     local xmap = { [MODE_OFF]=0, [MODE_AUTO]=3, [MODE_HEAT]=1, [MODE_COOL]=2 }
     local body = string.format("mode=%s&heattemp=%.1f&cooltemp=%.1f", xmap[mode] or 0, heatSP, coolSP)
     return doControl( body, dev )
@@ -1173,7 +1172,7 @@ function plugin_init(dev)
                     newDeviceDrawFunc="VenstarColorTouchInterface1_ALTUI.DeviceDraw"
                 }, k )
             D("plugin_init() ALTUI's RegisterPlugin action for %5 returned resultCode=%1, resultString=%2, job=%3, returnArguments=%4", rc,rs,jj,ra,MYTYPE)
-            local rc,rs,jj,ra = luup.call_action ("urn:upnp-org:serviceId:altui1", "RegisterPlugin",
+            rc,rs,jj,ra = luup.call_action ("urn:upnp-org:serviceId:altui1", "RegisterPlugin",
                 {
                     newDeviceType=DEVICETYPE,
                     newScriptFile="J_VenstarColorTouchThermostat1_ALTUI.js",
