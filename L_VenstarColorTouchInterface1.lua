@@ -1,6 +1,6 @@
 -- -----------------------------------------------------------------------------
 -- L_VenstarColorTouchInterface.lua
--- Copyright 2017,2018 Patrick H. Rigney, All Rights Reserved
+-- Copyright 2018 Patrick H. Rigney, All Rights Reserved
 -- http://www.toggledbits.com/venstar/
 -- This file is available under GPL 3.0. See LICENSE in documentation for info.
 -- -----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
-local _PLUGIN_VERSION = "1.0develop180817.1230"
+local _PLUGIN_VERSION = "1.0"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
