@@ -516,13 +516,17 @@ local function doInfoQuery( dev )
             local xmap = { [0]=MODE_OFF, [1]=MODE_HEAT, [2]=MODE_COOL, [3]=MODE_AUTO }
             setVar( OPMODE_SID, "ModeStatus", xmap[data.mode] or "Unknown", dev )
             if data.mode == 1 or data.mode == 2 then
+                -- In heating or cooling mode, that's the only setpoint possibility.
                 setVar( DEVICESID, "CurrentSetpoint", (data.mode==1) and "Heating" or "Cooling", dev )
             end
         end
         if data.state ~= nil then
+            -- Map colortouch state to Vera.
             local state = ({ [0]="Idle", [1]="Heating", [2]="Cooling", [3]="Lockout", [4]="Error" })[data.state] or "Unknown"
-            if data.state == 0 and ( data.fanstate or 0 ) ~= 0 then state = "FanOnly" end
+            if data.state == 0 and ( data.fanstate or 0 ) ~= 0 then state = "FanOnly" 
+            elseif data.state == 0 and data.mode == 0 then state = "Off" end
             setVar( STATUS_SID, "ModeState", state, dev )
+            -- If we can determine which setpoint is in effect, update it.
             if data.state == 1 or data.state == 2 then
                 setVar( DEVICESID, "CurrentSetpoint", state, dev )
             end
@@ -938,19 +942,16 @@ function discoveryTick( dargs )
             end
         until resp == nil
 
-        local now = os.time()
-        local delta = now - devData[tostring(dev)].discoveryTime
-        if delta < 30 then
+        if os.time() < devData[tostring(dev)].discoveryTime then
             luup.call_delay( "venstarCTDiscoveryTick", 2, dargs )
             return
         end
-        D("discoveryTick() elapsed %1, closing", delta)
         udp:close()
         devData[tostring(dev)].discoverySocket = nil
         devData[tostring(dev)].discoveryTime = nil
     end
     D("discoveryTick() end of discovery")
-    gatewayStatus( "" )
+    gatewayStatus( "Discovery finished. No new devices." )
 end
 
 -- Launch SSDP discovery.
@@ -965,6 +966,7 @@ local function launchDiscovery( dev )
     local mcastaddr = "239.255.255.250"
     local mcastport = 1900
     local serviceType = "colortouch:ecp"
+    local timeout = 10
     
     -- Any of this can fail, and it's OK.
     local udp = socket.udp()
@@ -972,8 +974,8 @@ local function launchDiscovery( dev )
     -- udp:setoption('dontroute', false)
     -- udp:setsockname('*', mcastport)
     local payload = string.format(  "M-SEARCH * HTTP/1.1\r\nHost: %s:%s\r\n" ..
-        "Man: \"ssdp:discover\"\r\nST: %s\r\n\r\n",
-        mcastaddr, mcastport, serviceType )
+        "Man: \"ssdp:discover\"\r\nST: %s\r\nMX: %d\r\n\r\n",
+        mcastaddr, mcastport, serviceType, timeout )
     D("launchDiscovery() sending discovery request %1", payload)
     local stat,err = udp:sendto( payload, mcastaddr, mcastport)
     if stat == nil then
@@ -982,7 +984,7 @@ local function launchDiscovery( dev )
 
     devData[tostring(dev)].discoverySocket = udp
     local now = os.time()
-    devData[tostring(dev)].discoveryTime = now
+    devData[tostring(dev)].discoveryTime = now + timeout
 
     runStamp[dev] = now
     luup.call_delay("venstarCTDiscoveryTick", 2, table.concat( { dev, runStamp[dev], "" }, ":" ) )

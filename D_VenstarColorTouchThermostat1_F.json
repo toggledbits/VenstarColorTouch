@@ -1,5 +1,5 @@
 {
-    "default_icon": "https://www.toggledbits.com/assets/venstar/colortouch_mode_off.png",
+    "default_icon": "https://www.toggledbits.com/assets/venstar/colortouch_mode_default.png",
     "state_icons": [{
             "img": "https://www.toggledbits.com/assets/venstar/colortouch_failed.png",
             "conditions": [{
@@ -8,31 +8,59 @@
                 "operator": "==",
                 "value": 1
             }]
-        }, {
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_heat.png",
+        }, 
+        {
+            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_off.png",
             "conditions": [{
-                "service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                "variable": "ModeStatus",
+                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+                "variable": "ModeState",
                 "operator": "==",
-                "value": "HeatOn"
+                "value": "Off"
+            }]
+        },
+        {
+            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_idle.png",
+            "conditions": [{
+                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+                "variable": "ModeState",
+                "operator": "==",
+                "value": "Idle"
             }]
         },
         {
             "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_cool.png",
             "conditions": [{
-                "service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                "variable": "ModeStatus",
+                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+                "variable": "ModeState",
                 "operator": "==",
-                "value": "CoolOn"
+                "value": "Cooling"
             }]
-        },
+        }, 
         {
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_auto.png",
+            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_heat.png",
             "conditions": [{
-                "service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                "variable": "ModeStatus",
+                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+                "variable": "ModeState",
                 "operator": "==",
-                "value": "AutoChangeOver"
+                "value": "Heating"
+            }]
+        }, 
+        {
+            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_lockout.png",
+            "conditions": [{
+                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+                "variable": "ModeState",
+                "operator": "==",
+                "value": "Lockout"
+            }]
+        }, 
+        {
+            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_fan.png",
+            "conditions": [{
+                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+                "variable": "ModeState",
+                "operator": "==",
+                "value": "FanOnly"
             }]
         }
     ],
