@@ -83,6 +83,17 @@ The plugin implements the interface a standard dual heating/cooling auto-changeo
 
 The plugin also enforces limits on the range and separation of the heating and cooling setpoints. These are determined by the thermostat. For example, if the cooling setpoint is 74F, and the thermostat requires a minimum separation of two degrees between setpoints, setting the heating setpoint to 73F will cause the cooling setpoint to be moved up to 75F.
 
+Icon | Meaning
+---- | -------
+![Off](https://www.toggledbits.com/assets/venstar/colortouch_mode_off.png) | Thermostat is OFF
+![Idle](https://www.toggledbits.com/assets/venstar/colortouch_mode_idle.png) | Thermostat is IDLE
+![Cooling](https://www.toggledbits.com/assets/venstar/colortouch_mode_cooling.png) | Thermostat is COOLING
+![Heating](https://www.toggledbits.com/assets/venstar/colortouch_mode_heating.png) | Theromostat is HEATING
+![FanOnly](https://www.toggledbits.com/assets/venstar/colortouch_mode_fan.png) | Fan is running (no heating or cooling)
+![Lockout](https://www.toggledbits.com/assets/venstar/colortouch_mode_lockout.png) | The thermostat is locked out
+![Error](https://www.toggledbits.com/assets/venstar/colortouch_failed.png) | The thermostat is indicating an error or the plugin cannot communicate with the thermostat
+![Default](https://www.toggledbits.com/assets/venstar/colortouch_mode_default.png) | The plugin cannot determine the state of the thermostat
+
 ## Actions ##
 
 ### Interface Service Actions and Variables ###
