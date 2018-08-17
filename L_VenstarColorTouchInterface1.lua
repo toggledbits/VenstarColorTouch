@@ -19,8 +19,8 @@ local _PLUGIN_VERSION = "1.0"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
-local debugMode = true
-local traceMode = true
+local debugMode = false
+local traceMode = false
 
 local MYSID = "urn:toggledbits-com:serviceId:VenstarColorTouchInterface1"
 local MYTYPE = "urn:schemas-toggledbits-com:device:VenstarColorTouchInterface:1"
@@ -59,50 +59,6 @@ local devicesByMAC = {}
 
 local isALTUI = false
 local isOpenLuup = false
-
-local function trace( typ, msg )
-    local ts = os.time()
-    local r
-    local t = {
-        ["type"]=typ,
-        plugin=__PLUGIN_NAME or "unknown",
-        pluginVersion=_CONFIGVERSION,
-        serial=luup.pk_accesspoint,
-        loadtime=luup.attr_get("LoadTime", 0),
-        systime=ts,
-        sysver=luup.version,
-        longitude=luup.longitude,
-        latitude=luup.latitude,
-        timezone=luup.timezone,
-        city=luup.city,
-        isALTUI=isALTUI,
-        isOpenLuup=isOpenLuup,
-        message=msg
-    }
-
-    local tHeaders = {}
-    local body = json.encode(t)
-    tHeaders["Content-Type"] = "application/json"
-    tHeaders["Content-Length"] = string.len(body)
-    
-    -- Make the request.
-    local respBody, httpStatus, httpHeaders
-    http.TIMEOUT = 10
-    respBody, httpStatus, httpHeaders = http.request{
-        url = "https://www.toggledbits.com/luuptrace/",
-        source = ltn12.source.string(body),
-        sink = ltn12.sink.table(r),
-        method = "POST",
-        headers = tHeaders,
-        redirect = false
-    }
-    if httpStatus == 401 or httpStatus == 404 then
-        traceMode = false
-    end
-    if httpStatus == 404 then
-        luup.variable_set(SID, "TraceMode", 0, myDevice)
-    end
-end
 
 local function dump(t)
     if t == nil then return "nil" end
