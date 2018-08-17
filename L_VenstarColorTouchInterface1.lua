@@ -15,7 +15,7 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
-local _PLUGIN_VERSION = "1.0develop180816.1545"
+local _PLUGIN_VERSION = "1.0develop180817.1230"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
@@ -162,7 +162,7 @@ local function L(msg, ...)
         end
     )
     luup.log(str, level)
-    if traceMode then trace('log',str) end
+    if traceMode and type(trace) == "function" then trace('log',str) end
 end
 
 local function D(msg, ...)
@@ -516,13 +516,17 @@ local function doInfoQuery( dev )
             local xmap = { [0]=MODE_OFF, [1]=MODE_HEAT, [2]=MODE_COOL, [3]=MODE_AUTO }
             setVar( OPMODE_SID, "ModeStatus", xmap[data.mode] or "Unknown", dev )
             if data.mode == 1 or data.mode == 2 then
+                -- In heating or cooling mode, that's the only setpoint possibility.
                 setVar( DEVICESID, "CurrentSetpoint", (data.mode==1) and "Heating" or "Cooling", dev )
             end
         end
         if data.state ~= nil then
+            -- Map colortouch state to Vera.
             local state = ({ [0]="Idle", [1]="Heating", [2]="Cooling", [3]="Lockout", [4]="Error" })[data.state] or "Unknown"
-            if data.state == 0 and ( data.fanstate or 0 ) ~= 0 then state = "FanOnly" end
+            if data.state == 0 and ( data.fanstate or 0 ) ~= 0 then state = "FanOnly" 
+            elseif data.state == 0 and data.mode == 0 then state = "Off" end
             setVar( STATUS_SID, "ModeState", state, dev )
+            -- If we can determine which setpoint is in effect, update it.
             if data.state == 1 or data.state == 2 then
                 setVar( DEVICESID, "CurrentSetpoint", state, dev )
             end
@@ -636,7 +640,9 @@ local function handleDiscoveryMessage( msg )
         D("handleDiscoveryMessage() can't handle message header: %1", msg)
         return
     end
-    table.remove( parts, 1 ) -- pop response type off
+    table.remove( parts, 1 ) -- pop HTTPU head off
+    
+    -- Parse headers to table with lowercase keys
     local hr = {}
     for _,l in ipairs( parts ) do
         local k,v = string.match( l or "", "^(%w+):%s*(.*)$" )
@@ -645,6 +651,8 @@ local function handleDiscoveryMessage( msg )
             D("handleDiscoveryMessage() response header %1 is %2", string.lower(k), v)
         end
     end
+    
+    -- Evaluate response headers
     if hr.st == nil or hr.st ~= "colortouch:ecp" then
         D("handleDiscoveryMessage() message is not for colortouch: %1", msg)
         return
@@ -653,15 +661,14 @@ local function handleDiscoveryMessage( msg )
         L({level=2,msg="Malformed or unrecognized discovery response: %1"}, msg)
         return
     end
-    local api_url = hr.location or "http://127.0.0.1:8080/"
-    local mac,name = string.match( hr.usn or "", "ecp:(..:..:..:..:..:..):name:(.*)" ) -- ??? parse better?
+    local api_url = hr.location
+    local mac,name = string.match( hr.usn or "", "ecp:(..:..:..:..:..:..):name:(.*)" ) -- colortouch-specific
     if mac == nil then
         D("handleDiscoveryMessage() can't parse USN %1", hr.usn )
         return
     end
-    
     mac = string.gsub( mac, ":", "" )
-    -- URLdecode name, supply default
+    -- URLdecode name, supply default if needed
     name = string.gsub( name or "", "%%(..)", function( x ) return string.char( tonumber(x,16) ) end )
     if ( name or "" ) == "" then name = "ColorTouch " .. string.sub( mac, -6 ) end
 
@@ -714,7 +721,7 @@ local function passGenericDiscovery( url, mac, ip, port, dev )
 end
 
 function deviceTick( dargs )
-    D("deviceTick(%1), luup.device=%2", dargs, luup.device)
+    D("deviceTick(%1)", dargs)
     local dev, stamp = dargs:match("^(%d+):(%d+):(.*)$")
     dev = tonumber(dev, 10)
     assert(dev ~= nil, "Nil device in deviceTick()")
@@ -913,13 +920,12 @@ end
 -- Tick for UDP discovery.
 function discoveryTick( dargs )
     D("discoveryTick(%1)", dargs)
-    local dev, stamp = dargs:match("^(%d+):(%d+):(.*)$") -- ignore rest
+    local dev, stamp = dargs:match("^(%d+):(%d+):(.*)$")
     dev = tonumber(dev, 10)
     assert(dev ~= nil)
-    assert(luup.devices[dev].device_num_parent == 0)
     stamp = tonumber(stamp, 10)
     if stamp ~= runStamp[dev] then
-        L("discoveryTick() got stamp %1 expected %2; must be newer thread running, exiting", stamp, runStamp[dev])
+        D("discoveryTick() received stamp %1, expecting %2; must be a newer thread started, exiting.", stamp, runStamp[dev])
         return
     end
 
@@ -936,22 +942,19 @@ function discoveryTick( dargs )
             end
         until resp == nil
 
-        local now = os.time()
-        local delta = now - devData[tostring(dev)].discoveryTime
-        if delta < 30 then
+        if os.time() < devData[tostring(dev)].discoveryTime then
             luup.call_delay( "venstarCTDiscoveryTick", 2, dargs )
             return
         end
-        D("discoveryTick() elapsed %1, closing", delta)
         udp:close()
         devData[tostring(dev)].discoverySocket = nil
         devData[tostring(dev)].discoveryTime = nil
     end
     D("discoveryTick() end of discovery")
-    gatewayStatus( "" )
+    gatewayStatus( "Discovery finished. No new devices." )
 end
 
--- Launch UDP discovery.
+-- Launch SSDP discovery.
 local function launchDiscovery( dev )
     D("launchDiscovery(%1)", dev)
     assert(dev ~= nil)
@@ -959,26 +962,32 @@ local function launchDiscovery( dev )
 
     gatewayStatus( "Discovery running..." )
 
+    -- Configure
+    local mcastaddr = "239.255.255.250"
+    local mcastport = 1900
+    local serviceType = "colortouch:ecp"
+    local timeout = 10
+    
     -- Any of this can fail, and it's OK.
     local udp = socket.udp()
-    local broadcast = "239.255.255.250"
-    local port = 1900
-    udp:setoption('broadcast', true)
-    udp:setoption('dontroute', false) -- Important! =false
-    -- udp:setsockname('*', port) -- Important! =comment out
-    D("launchDiscovery() sending discovery request to %1:%2", broadcast, port)
-    local stat,err = udp:sendto( "M-SEARCH * HTTP/1.1\r\nHost: " .. broadcast .. ":" .. port ..
-        "\r\nMan: \"ssdp:discover\"\r\nST: colortouch:ecp\r\n\r\n", broadcast, port)
+    -- udp:setoption('broadcast', true)
+    -- udp:setoption('dontroute', false)
+    -- udp:setsockname('*', mcastport)
+    local payload = string.format(  "M-SEARCH * HTTP/1.1\r\nHost: %s:%s\r\n" ..
+        "Man: \"ssdp:discover\"\r\nST: %s\r\nMX: %d\r\n\r\n",
+        mcastaddr, mcastport, serviceType, timeout )
+    D("launchDiscovery() sending discovery request %1", payload)
+    local stat,err = udp:sendto( payload, mcastaddr, mcastport)
     if stat == nil then
-        L("Failed to send broadcast: %1", err)
+        L("Failed to send discovery req: %1", err)
     end
 
     devData[tostring(dev)].discoverySocket = udp
     local now = os.time()
-    devData[tostring(dev)].discoveryTime = now
+    devData[tostring(dev)].discoveryTime = now + timeout
 
     runStamp[dev] = now
-    luup.call_delay("venstarCTDiscoveryTick", 1, table.concat( { dev, runStamp[dev], "" }, ":") ) -- 3 dargs
+    luup.call_delay("venstarCTDiscoveryTick", 2, table.concat( { dev, runStamp[dev], "" }, ":" ) )
 end
 
 -- Handle variable change callback
