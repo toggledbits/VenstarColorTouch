@@ -1,6 +1,6 @@
 -- -----------------------------------------------------------------------------
 -- L_VenstarColorTouchInterface.lua
--- Copyright 2017,2018 Patrick H. Rigney, All Rights Reserved
+-- Copyright 2018 Patrick H. Rigney, All Rights Reserved
 -- http://www.toggledbits.com/venstar/
 -- This file is available under GPL 3.0. See LICENSE in documentation for info.
 -- -----------------------------------------------------------------------------
@@ -15,12 +15,12 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
-local _PLUGIN_VERSION = "1.0develop180817.1230"
+local _PLUGIN_VERSION = "1.0"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
-local debugMode = true
-local traceMode = true
+local debugMode = false
+local traceMode = false
 
 local MYSID = "urn:toggledbits-com:serviceId:VenstarColorTouchInterface1"
 local MYTYPE = "urn:schemas-toggledbits-com:device:VenstarColorTouchInterface:1"
@@ -59,50 +59,6 @@ local devicesByMAC = {}
 
 local isALTUI = false
 local isOpenLuup = false
-
-local function trace( typ, msg )
-    local ts = os.time()
-    local r
-    local t = {
-        ["type"]=typ,
-        plugin=__PLUGIN_NAME or "unknown",
-        pluginVersion=_CONFIGVERSION,
-        serial=luup.pk_accesspoint,
-        loadtime=luup.attr_get("LoadTime", 0),
-        systime=ts,
-        sysver=luup.version,
-        longitude=luup.longitude,
-        latitude=luup.latitude,
-        timezone=luup.timezone,
-        city=luup.city,
-        isALTUI=isALTUI,
-        isOpenLuup=isOpenLuup,
-        message=msg
-    }
-
-    local tHeaders = {}
-    local body = json.encode(t)
-    tHeaders["Content-Type"] = "application/json"
-    tHeaders["Content-Length"] = string.len(body)
-    
-    -- Make the request.
-    local respBody, httpStatus, httpHeaders
-    http.TIMEOUT = 10
-    respBody, httpStatus, httpHeaders = http.request{
-        url = "https://www.toggledbits.com/luuptrace/",
-        source = ltn12.source.string(body),
-        sink = ltn12.sink.table(r),
-        method = "POST",
-        headers = tHeaders,
-        redirect = false
-    }
-    if httpStatus == 401 or httpStatus == 404 then
-        traceMode = false
-    end
-    if httpStatus == 404 then
-        luup.variable_set(SID, "TraceMode", 0, myDevice)
-    end
-end
 
 local function dump(t)
     if t == nil then return "nil" end
@@ -818,7 +774,7 @@ local function deviceStart( dev )
     devData[dk] = {}
     local s = luup.variable_get( DEVICESID, "sysinfo", dev ) or ""
     if s ~= "" then
-        local data,pos,err = json.decode( s )
+        local data,_,err = json.decode( s )
         if not err then
             devData[dk].sysinfo = data
         end
@@ -877,7 +833,7 @@ local function tryTarget( mac, ip, port, dev )
             end
         end
     end
-    L({level=1,msg="Device at %1 could not be reached; check that 'Local API' is enabled in thermostat's Wi-Fi settings"}, url)
+    L({level=1,msg="Device at %1 could not be reached; check that 'Local API' is enabled in thermostat's Wi-Fi settings"}, ip)
     gatewayStatus( "Can't connect to " .. ip )
 end
 
@@ -1026,7 +982,6 @@ local function sendModeAndSetpoints( dev )
     local mode = luup.variable_get( OPMODE_SID, "ModeTarget", dev )
     local heatSP = getVarNumeric( "CurrentSetpoint", devData[dk].sysinfo.minHeatTemp, dev, SETPOINT_HEAT_SID )
     local coolSP = getVarNumeric( "CurrentSetpoint", devData[dk].sysinfo.maxCoolTemp, dev, SETPOINT_COOL_SID )
-    local cfUnits = luup.variable_get( DEVICESID, "ConfiguredUnits", dev ) or "F"
     local xmap = { [MODE_OFF]=0, [MODE_AUTO]=3, [MODE_HEAT]=1, [MODE_COOL]=2 }
     local body = string.format("mode=%s&heattemp=%.1f&cooltemp=%.1f", xmap[mode] or 0, heatSP, coolSP)
     return doControl( body, dev )
@@ -1217,7 +1172,7 @@ function plugin_init(dev)
                     newDeviceDrawFunc="VenstarColorTouchInterface1_ALTUI.DeviceDraw"
                 }, k )
             D("plugin_init() ALTUI's RegisterPlugin action for %5 returned resultCode=%1, resultString=%2, job=%3, returnArguments=%4", rc,rs,jj,ra,MYTYPE)
-            local rc,rs,jj,ra = luup.call_action ("urn:upnp-org:serviceId:altui1", "RegisterPlugin",
+            rc,rs,jj,ra = luup.call_action ("urn:upnp-org:serviceId:altui1", "RegisterPlugin",
                 {
                     newDeviceType=DEVICETYPE,
                     newScriptFile="J_VenstarColorTouchThermostat1_ALTUI.js",
