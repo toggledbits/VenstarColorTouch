@@ -15,7 +15,7 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
-local _PLUGIN_VERSION = "1.1develop-180819.2315"
+local _PLUGIN_VERSION = "1.1develop-180820.1330"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
