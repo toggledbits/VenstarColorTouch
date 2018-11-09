@@ -7,7 +7,7 @@
     <serviceStateTable>
         <stateVariable sendEvents="yes">
             <name>Failure</name>
-            <dataType>ui1</dataType>
+            <dataType>boolean</dataType>
             <defaultValue>0</defaultValue>
             <shortCode>failure</shortCode>
         </stateVariable>
@@ -16,6 +16,10 @@
             <dataType>string</dataType>
             <defaultValue>Home</defaultValue>
             <shortCode>homeaway</shortCode>
+			<allowedValueList>
+				<allowedValue>Home</allowedValue>
+				<allowedValue>Away</allowedValue>
+			</allowedValueList>
         </stateVariable>
     </serviceStateTable>
     <actionList>

@@ -5,6 +5,11 @@
         <minor>0</minor>
     </specVersion>
     <serviceStateTable>
+        <stateVariable sendEvents="no">
+            <name>DebugMode</name>
+            <dataType>boolean</dataType>
+            <defaultValue>0</defaultValue>
+        </stateVariable>
     </serviceStateTable>
     <actionList>
         <action>
@@ -36,6 +41,7 @@
                 <argument>
                     <name>debug</name>
                     <direction>in</direction>
+                    <relatedStateVariable>DebugMode</relatedStateVariable>
                 </argument>
             </argumentList>
         </action>

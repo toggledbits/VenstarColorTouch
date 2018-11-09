@@ -19,8 +19,8 @@ local _PLUGIN_VERSION = "1.2develop"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
-local debugMode = true
-local traceMode = true
+local debugMode = false
+local traceMode = false
 
 local MYSID = "urn:toggledbits-com:serviceId:VenstarColorTouchInterface1"
 local MYTYPE = "urn:schemas-toggledbits-com:device:VenstarColorTouchInterface:1"
