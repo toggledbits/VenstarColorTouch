@@ -15,12 +15,12 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
-local _PLUGIN_VERSION = "1.1stable-181002"
+local _PLUGIN_VERSION = "1.1-stable181109"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
-local debugMode = true
-local traceMode = true
+local debugMode = false
+local traceMode = false
 
 local MYSID = "urn:toggledbits-com:serviceId:VenstarColorTouchInterface1"
 local MYTYPE = "urn:schemas-toggledbits-com:device:VenstarColorTouchInterface:1"
