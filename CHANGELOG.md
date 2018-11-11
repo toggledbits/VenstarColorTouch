@@ -1,8 +1,8 @@
 # Change Log for Venstar ColorTouch Plugin (Vera) #
 
-## Version 1.1 (as of stable-181109) ##
+## Version 1.2 (released) ##
 
-* Add declarations of Vera-specific setpoint services (...Setpoint1_Heat, ..._Cool), fixes UI issue with setpoint changes not working.
+* Add declarations of Vera-specific setpoint services (...Setpoint1_Heat, ..._Cool), fixes UI issue with setpoint changes not working consistently.
 
 ## Version 1.1 (released) ##
 
