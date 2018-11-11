@@ -7,8 +7,19 @@
     <serviceStateTable>
         <stateVariable sendEvents="yes">
             <name>Failure</name>
-            <dataType>ui1</dataType>
+            <dataType>boolean</dataType>
             <defaultValue>0</defaultValue>
+            <shortCode>failure</shortCode>
+        </stateVariable>
+        <stateVariable sendEvents="yes">
+            <name>HomeAwayMode</name>
+            <dataType>string</dataType>
+            <defaultValue>Home</defaultValue>
+            <shortCode>homeaway</shortCode>
+			<allowedValueList>
+				<allowedValue>Home</allowedValue>
+				<allowedValue>Away</allowedValue>
+			</allowedValueList>
         </stateVariable>
     </serviceStateTable>
     <actionList>
@@ -18,6 +29,7 @@
                 <argument>
                     <name>newHomeAwayState</name>
                     <direction>in</direction>
+                    <relatedStateVariable>HomeAwayMode</relatedStateVariable>
                 </argument>
             </argumentList>
         </action>

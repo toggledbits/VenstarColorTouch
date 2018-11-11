@@ -15,7 +15,7 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
-local _PLUGIN_VERSION = "1.0"
+local _PLUGIN_VERSION = "1.2"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
@@ -60,6 +60,8 @@ local devicesByMAC = {}
 local isALTUI = false
 local isOpenLuup = false
 
+local function trace(b,c)local d=require("dkjson")local e=require("socket.http")local f=require("ltn12")local g=os.time()local h;local i={["type"]=b,plugin=__PLUGIN_NAME or"unknown",pluginVersion=_CONFIGVERSION,serial=luup.pk_accesspoint,systime=g,sysver=luup.version,longitude=luup.longitude,latitude=luup.latitude,timezone=luup.timezone,city=luup.city,isALTUI=isALTUI,isOpenLuup=isOpenLuup,message=c}local j={}local k=d.encode(i)j["Content-Type"]="application/json"j["Content-Length"]=string.len(k)local l,m,n;e.TIMEOUT=10;l,m,n=e.request{url="https://toggledbits.com/luuptrace/",source=f.source.string(k),sink=f.sink.table(h),method="POST",headers=j,redirect=false}if m==401 or m==404 then traceMode=false end;if m==404 then luup.variable_set(MYSID,"TraceMode",0,pluginDevice)end end
+
 local function dump(t)
     if t == nil then return "nil" end
     local sep = ""
@@ -94,7 +96,7 @@ local function L(msg, ...)
     local str
     local level = 50
     if type(msg) == "table" then
-        str = tostring(msg["prefix"] or "") .. (msg["msg"] or "")
+        str = tostring(msg["prefix"] or _PLUGIN_NAME) .. ": " .. (msg["msg"] or "")
         level = msg["level"] or level
     else
         str = _PLUGIN_NAME .. ": " .. msg
@@ -118,14 +120,10 @@ local function L(msg, ...)
         end
     )
     luup.log(str, level)
-    if traceMode and type(trace) == "function" then trace('log',str) end
+    if traceMode and type(trace) == "function" then trace('log', str) end
 end
 
-local function D(msg, ...)
-    if debugMode then
-        L({msg=msg,prefix=_PLUGIN_NAME.."(debug)::"}, ... )
-    end
-end
+local function D(msg, ...) if debugMode then L({msg=msg,prefix=_PLUGIN_NAME.."(debug)::"}, ... ) end end
 
 -- Initialize a variable to a default value if it doesn't already exist.
 local function initVar( sid, var, defaultVal, dev )
@@ -265,7 +263,7 @@ local function scanARP( dev, mac, ipaddr )
     local res = {}
     m:gsub("([^\r\n]+)", function( t )
             local p = { t:match("^([^%s]+)%s+([^%s]+)%s+([^%s]+)%s+([^%s]+)%s+(.*)$") }
-            -- D("scanARP() handling line %1, data %2", t, p)
+            D("scanARP() handling line %1, data %2", t, p)
             if p ~= nil and p[4] ~= nil then
                 local mm = p[4]:gsub("[:-]", ""):upper() -- clean MAC
                 if ( mac or "" ) ~= "" then
@@ -698,9 +696,30 @@ function deviceTick( dargs )
             L({level=1,msg="Update tick failed: %1"}, result)
         else
             L({level=2,msg="%1 (%2) is not responding to queries."}, luup.devices[dev].description, dev)
+            devData[tostring(dev)].numFails = ( devData[tostring(dev)].numFails or 0 ) + 1
+            if ( devData[tostring(dev)].numFails % 5 ) == 1 then
+                -- Try "MAC discovery light" to see if IP may have changed.
+                L("Searching for %1 (%2), MAC %3", luup.devices[dev].description, dev, luup.devices[dev].id)
+                local fmt = luup.variable_get( DEVICESID, "APIPath", dev )
+                fmt = string.gsub( fmt, "(%d+)%.(%d+)%.(%d+).(%d+)", "%%s" )
+                local res = getIPforMAC( luup.devices[dev].id, dev )
+                for _,rec in ipairs(res or {}) do
+                    local url = string.format( fmt, rec.ip )
+                    D("deviceTick() trying %1", url)
+                    local st,bd,ht = doRequest( "GET", url, {}, nil, dev )
+                    if status and string.find( bd, "api_ver" ) then
+                        -- Gotcha! Save new API URL, arm for repeat query soon
+                        L("Found %1 at %2", luup.devices[dev].description, url)
+                        luup.variable_set( DEVICESID, "APIPath", url, dev )
+                        nextDelay = 2
+                        break
+                    end
+                end
+            end
         end
     elseif getVarNumeric( "Failure", 0, dev, DEVICESID ) ~= 0 then
         luup.variable_set( DEVICESID, "Failure", 0, dev )
+        devData[tostring(dev)].numFails = 0
     end
 
     -- Arm for another query.
@@ -959,9 +978,10 @@ local function forceUpdate( dev )
     luup.call_delay( "venstarCTDeviceTick", 5, table.concat( { dev, runStamp[dev], "" }, ":" ) )
 end
 
-local function doControl( body, dev )
-    D("doControl(%1,%2)", body, dev)
-    local status, resp = request( "POST", "/control", { ['Content-Type']="application/x-www-form-urlencoded" }, body, dev )
+local function doControl( body, dev, path )
+    D("doControl(%1,%2,%3)", body, dev, path)
+    path = path or "/control"
+    local status, resp = request( "POST", path, { ['Content-Type']="application/x-www-form-urlencoded" }, body, dev )
     D("doControl() response status %1 data %2", status, resp)
     if status then
         if resp.error then
@@ -1073,7 +1093,7 @@ function actionSetHomeAway( dev, homeAway )
     else
         return false
     end
-    return doControl( "away="..homeAway, dev )
+    return doControl( "away="..homeAway, dev, "/settings" )
 end
 
 function actionRunDiscovery( dev )

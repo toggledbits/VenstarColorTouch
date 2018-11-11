@@ -1,717 +1,721 @@
 {
-    "default_icon": "https://www.toggledbits.com/assets/venstar/colortouch_mode_default.png",
-    "state_icons": [{
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_failed.png",
-            "conditions": [{
-                "service": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
-                "variable": "Failure",
-                "operator": "==",
-                "value": 1
-            }]
-        }, 
-        {
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_off.png",
-            "conditions": [{
-                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
-                "variable": "ModeState",
-                "operator": "==",
-                "value": "Off"
-            }]
-        },
-        {
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_idle.png",
-            "conditions": [{
-                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
-                "variable": "ModeState",
-                "operator": "==",
-                "value": "Idle"
-            }]
-        },
-        {
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_cool.png",
-            "conditions": [{
-                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
-                "variable": "ModeState",
-                "operator": "==",
-                "value": "Cooling"
-            }]
-        }, 
-        {
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_heat.png",
-            "conditions": [{
-                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
-                "variable": "ModeState",
-                "operator": "==",
-                "value": "Heating"
-            }]
-        }, 
-        {
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_lockout.png",
-            "conditions": [{
-                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
-                "variable": "ModeState",
-                "operator": "==",
-                "value": "Lockout"
-            }]
-        }, 
-        {
-            "img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_fan.png",
-            "conditions": [{
-                "service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
-                "variable": "ModeState",
-                "operator": "==",
-                "value": "FanOnly"
-            }]
-        }
-    ],
-    "x": 2,
-    "y": 4,
-    "inScene": 1,
-    "Tabs": [{
-            "Label": {
-                "lang_tag": "tabname_control",
-                "text": "Control"
-            },
-            "Position": 0,
-            "TabType": "flash",
-            "top_navigation_tab": 1,
-            "ControlGroup": [{
-                    "id": 1,
-                    "scenegroup": 1
-                },
-                {
-                    "id": 2,
-                    "scenegroup": 2
-                },
-                {
-                    "id": 3,
-                    "scenegroup": 3
-                },
-                {
-                    "id": 4,
-                    "scenegroup": 4
-                }
-            ],
-            "SceneGroup": [{
-                    "id": 1,
-                    "top": 0,
-                    "left": 0,
-                    "x": 1,
-                    "y": 4
-                },
-                {
-                    "id": 2,
-                    "top": 0,
-                    "left": 2,
-                    "x": 2,
-                    "y": 3
-                },
-                {
-                    "id": 3,
-                    "top": 0,
-                    "left": "2.5",
-                    "x": "0.5",
-                    "y": 3
-                },
-                {
-                    "id": 4,
-                    "top": 3,
-                    "left": 2,
-                    "x": 1,
-                    "y": 1
-                }
-            ],
-            "Control": [{
-                    "ControlType": "label",
-                    "top": 0,
-                    "left": 0,
-                    "Label": {
-                        "lang_tag": "colortouch_mode",
-                        "text": "Mode"
-                    },
-                    "Display": {
-                        "Top": 0,
-                        "Left": 30,
-                        "Width": 100,
-                        "Height": 25
-                    }
-                },
-                {
-                    "ControlGroup": 1,
-                    "ControlType": "button",
-                    "top": 0,
-                    "left": 0,
-                    "Label": {
-                        "lang_tag": "cmd_off",
-                        "text": "Off"
-                    },
-                    "Display": {
-                        "Top": 30,
-                        "Left": 50,
-                        "Width": 75,
-                        "Height": 20,
-                        "Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                        "Variable": "ModeStatus",
-                        "Value": "Off"
-                    },
-                    "Command": {
-                        "Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                        "Action": "SetModeTarget",
-                        "Parameters": [{
-                            "Name": "NewModeTarget",
-                            "Value": "Off"
-                        }]
-                    },
-                    "ControlCode": "hvac_off"
-                },
-                {
-                    "ControlGroup": 1,
-                    "ControlType": "button",
-                    "top": 1,
-                    "left": 0,
-                    "Label": {
-                        "lang_tag": "cmd_auto",
-                        "text": "Auto"
-                    },
-                    "Display": {
-                        "Top": 60,
-                        "Left": 50,
-                        "Width": 75,
-                        "Height": 20,
-                        "Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                        "Variable": "ModeStatus",
-                        "Value": "AutoChangeOver"
-                    },
-                    "Command": {
-                        "Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                        "Action": "SetModeTarget",
-                        "Parameters": [{
-                            "Name": "NewModeTarget",
-                            "Value": "AutoChangeOver"
-                        }]
-                    },
-                    "ControlCode": "hvac_auto"
-                },
-                {
-                    "ControlGroup": 1,
-                    "ControlType": "line_break"
-                },
-                {
-                    "ControlGroup": 1,
-                    "ControlType": "button",
-                    "top": 2,
-                    "left": 0,
-                    "Label": {
-                        "lang_tag": "cmd_cool",
-                        "text": "Cool"
-                    },
-                    "Display": {
-                        "Top": 30,
-                        "Left": 150,
-                        "Width": 75,
-                        "Height": 20,
-                        "Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                        "Variable": "ModeStatus",
-                        "Value": "CoolOn"
-                    },
-                    "Command": {
-                        "Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                        "Action": "SetModeTarget",
-                        "Parameters": [{
-                            "Name": "NewModeTarget",
-                            "Value": "CoolOn"
-                        }]
-                    },
-                    "ControlCode": "hvac_cool"
-                },
-                {
-                    "ControlGroup": 1,
-                    "ControlType": "button",
-                    "top": 3,
-                    "left": 0,
-                    "Label": {
-                        "lang_tag": "cmd_heat",
-                        "text": "Heat"
-                    },
-                    "Display": {
-                        "Top": 60,
-                        "Left": 150,
-                        "Width": 75,
-                        "Height": 20,
-                        "Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                        "Variable": "ModeStatus",
-                        "Value": "HeatOn"
-                    },
-                    "Command": {
-                        "Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-                        "Action": "SetModeTarget",
-                        "Parameters": [{
-                            "Name": "NewModeTarget",
-                            "Value": "HeatOn"
-                        }]
-                    },
-                    "ControlCode": "hvac_heat"
-                },
-                {
-                    "ControlGroup": 1,
-                    "ControlType": "line_break"
-                },
-                {
-                    "ControlGroup": 2,
-                    "ControlType": "spinner_horizontal",
-                    "top": 0,
-                    "left": 2,
-                    "ID": "NewSP",
-                    "Style": "numeric",
-                    "LabelUp": {
-                        "lang_tag": "temperature_increase",
-                        "text": "increase"
-                    },
-                    "LabelDown": {
-                        "lang_tag": "temperature_decrease",
-                        "text": "decrease"
-                    },
-                    "LabelSymbol": {
-                        "lang_tag": "heater_label_symbol",
-                        "text": "&deg;F"
-                    },
-                    "Display": {
-                        "Service": "urn:upnp-org:serviceId:TemperatureSetpoint1_Heat",
-                        "Variable": "CurrentSetpoint",
-                        "MinValue": 35,
-                        "MaxValue": 80,
-                        "Step": 1.0,
-                        "Editable": 1,
-                        "Top": 0,
-                        "Left": 270,
-                        "Width": 100,
-                        "Height": 25
-                    },
-                    "Command": {
-                        "Service": "urn:upnp-org:serviceId:TemperatureSetpoint1_Heat",
-                        "Action": "SetCurrentSetpoint",
-                        "ActionArgumentName": "NewCurrentSetpoint"
-                    },
-                    "ControlCode": "venstar_setpoint_heat"
-                },
-                {
-                    "ControlGroup": 2,
-                    "ControlType": "spinner_horizontal",
-                    "top": 0,
-                    "left": 2,
-                    "ID": "NewSP",
-                    "Style": "numeric",
-                    "LabelUp": {
-                        "lang_tag": "temperature_increase",
-                        "text": "increase"
-                    },
-                    "LabelDown": {
-                        "lang_tag": "temperature_decrease",
-                        "text": "decrease"
-                    },
-                    "LabelSymbol": {
-                        "lang_tag": "heater_label_symbol",
-                        "text": "&deg;F"
-                    },
-                    "Display": {
-                        "Service": "urn:upnp-org:serviceId:TemperatureSetpoint1_Cool",
-                        "Variable": "CurrentSetpoint",
-                        "MinValue": 65,
-                        "MaxValue": 99,
-                        "Step": 1.0,
-                        "Editable": 1,
-                        "Top": 0,
-                        "Left": 360,
-                        "Width": 100,
-                        "Height": 25
-                    },
-                    "Command": {
-                        "Service": "urn:upnp-org:serviceId:TemperatureSetpoint1_Cool",
-                        "Action": "SetCurrentSetpoint",
-                        "ActionArgumentName": "NewCurrentSetpoint"
-                    },
-                    "ControlCode": "venstar_setpoint_cool"
-                },
-                {
-                    "ControlType": "label",
-                    "HorizontalMultiplier": "0.5",
-                    "top": "0.1",
-                    "left": 0,
-                    "text_align": "left",
-                    "Label": {
-                        "lang_tag": "colortouch_fan",
-                        "text": "Fan"
-                    },
-                    "Display": {
-                        "Top": 90,
-                        "Left": 30,
-                        "Width": 80,
-                        "Height": 25
-                    },
-                    "ControlCode": "fan_label"
-                },
-                {
-                    "ControlType": "variable",
-                    "HorizontalMultiplier": "0.5",
-                    "top": "0.1",
-                    "left": 1,
-                    "Display": {
-                        "Top": 90,
-                        "Left": 90,
-                        "Width": 120,
-                        "Height": 25,
-                        "Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
-                        "Variable": "FanStatus"
-                    },
-                    "ControlCode": "hvac_fanstatus"
-                },
-                {
-                    "ControlGroup": 4,
-                    "ControlType": "variable",
-                    "top": "0.2",
-                    "left": 0,
-                    "Display": {
-                        "Top": 120,
-                        "Left": 30,
-                        "Width": 100,
-                        "Height": 25,
-                        "Service": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
-                        "Variable": "DisplayTemperature"
-                    },
-                    "ControlCode": "colortouch_temp"
-                },
-                {
-                    "ControlGroup": 4,
-                    "ControlType": "line_break"
-                },
-                {
-                    "ControlGroup": 4,
-                    "ControlType": "variable",
-                    "top": "0.5",
-                    "left": 0,
-                    "LabelSymbol": {
-                        "lang_tag": "colortouch_status",
-                        "text": "Status"
-                    },
-                    "Display": {
-                        "Top": 0,
-                        "Left": 150,
-                        "Width": 320,
-                        "Height": 25,
-                        "Service": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
-                        "Variable": "DisplayStatus"
-                    },
-                    "ControlCode": "colortouch_status"
-                },
-                {
-                   "ControlType":"multi_state_button",
-                   "top":0,
-                   "left":1,
-                   "Display":{
-                      "Top": 90,
-                      "Left": 270,
-                      "Width": 72,
-                      "Height": 40
-                   },
-                   "states":[
-                      {
-                         "Label":{
-                            "lang_tag":"colortouch_fan_auto",
-                            "text":"Fan Auto"
-                         },
-                         "Display":{
-                            "Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
-                            "Variable": "Mode",
-                            "Value": "Auto"
-                         },
-                         "Command": {
-                            "Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
-                            "Action": "SetMode",
-                            "Parameters": [
-                               {
-                                  "Name": "NewMode",
-                                  "Value": "Auto"
-                               }
-                            ]
-                         },
-                         "ControlCode":"colortouch_fanmode_auto"
-                      },
-                      {
-                         "Label":{
-                            "lang_tag":"colortouch_fan_on",
-                            "text": "Fan On"
-                         },
-                         "Display":{
-                            "Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
-                            "Variable": "Mode",
-                            "Value": "ContinuousOn"
-                         },
-                         "Command": {
-                            "Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
-                            "Action": "SetMode",
-                            "Parameters": [
-                               {
-                                  "Name": "NewMode",
-                                  "Value": "ContinuousOn"
-                               }
-                            ]
-                         },
-                         "ControlCode":"colortouch_fanmode_on"
-                      }
-                   ],
-                   "ControlCode": "colortouch_fanmode"
-                },
-                {
-                    "ControlType": "label",
-                    "top": "0.2",
-                    "left": 0,
-                    "Label": {
-                        "lang_tag": "colortouch_about",
-                        "text": "Venstar ColorTouch Interface v1.0 &copy; 2018 Patrick H. Rigney, All Rights Reserved.<br/><a href='http://www.toggledbits.com/venstar/'>http://www.toggledbits.com/venstar/</a>"
-                    },
-                    "Display": {
-                        "Top": 180,
-                        "Left": 30,
-                        "Width": 300,
-                        "Height": 25
-                    },
-                    "ControlCode": "tb_venstarcolortouch_about"
-                }
-            ],
-            "Conditions": []
-        },
-        {
-            "Label": {
-                "lang_tag": "ui7_advanced",
-                "text": "Advanced"
-            },
-            "Position": 1,
-            "TabType": "javascript",
-            "ScriptName": "shared.js",
-            "Function": "advanced_device"
-        },
-        {
-            "Label": {
-                "lang_tag": "ui7_logs",
-                "text": "Logs"
-            },
-            "Position": 2,
-            "TabType": "javascript",
-            "ScriptName": "shared.js",
-            "Function": "device_logs"
-        },
-        {
-            "Label": {
-                "lang_tag": "ui7_notifications",
-                "text": "Notifications"
-            },
-            "Position": 3,
-            "TabType": "javascript",
-            "ScriptName": "shared.js",
-            "Function": "device_notifications"
-        },
-        {
-            "Label": {
-                "lang_tag": "ui7_device_scenes",
-                "text": "Scenes"
-            },
-            "Position": 4,
-            "TabType": "javascript",
-            "ScriptName": "shared.js",
-            "Function": "device_scenes"
-        }
-    ],
-    "eventList2": [{
-            "id": 1,
-            "label": {
-                "lang_tag": "thermostat_mode_changes",
-                "text": "Thermostat Mode Changes"
-            },
-            "serviceId": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
-            "argumentList": [{
-                "id": 1,
-                "dataType": "string",
-                "defaultValue": "",
-                "allowedValueList": [{
-                        "Off": "Off",
-                        "HumanFriendlyText": {
-                            "lang_tag": "colortouch_turned_off",
-                            "text": "_DEVICE_NAME_ is turned off"
-                        }
-                    },
-                    {
-                        "Cool": "CoolOn",
-                        "HumanFriendlyText": {
-                            "lang_tag": "colortouch_set_to_cool",
-                            "text": "_DEVICE_NAME_ mode changed to cool"
-                        }
-                    },
-                    {
-                        "Heat": "HeatOn",
-                        "HumanFriendlyText": {
-                            "lang_tag": "colortouch_set_to_heat",
-                            "text": "_DEVICE_NAME_ mode changed to heat"
-                        }
-                    },
-                    {
-                        "Auto": "AutoChangeOver",
-                        "HumanFriendlyText": {
-                            "lang_tag": "colortouch_set_to_auto",
-                            "text": "_DEVICE_NAME_ mode changed to auto"
-                        }
-                    }
-                ],
-                "name": "ModeTarget",
-                "comparisson": "=",
-                "prefix": {
-                    "lang_tag": "mode",
-                    "text": "Mode"
-                },
-                "suffix": {}
-            }]
-        },
-        {
-            "id": 2,
-            "label": {
-                "lang_tag": "ambient_temperature_goes_above",
-                "text": "Ambient temperature goes above"
-            },
-            "serviceId": "urn:upnp-org:serviceId:TemperatureSensor1",
-            "norepeat": 1,
-            "argumentList": [{
-                "id": 1,
-                "dataType": "i4",
-                "name": "CurrentTemperature",
-                "comparisson": ">",
-                "prefix": {
-                    "lang_tag": "temperature",
-                    "text": "Temperature"
-                },
-                "suffix": {
-                    "lang_tag": "degrees",
-                    "text": "degrees"
-                },
-                "HumanFriendlyText": {
-                    "lang_tag": "hft_ambient_temperature_goes_above",
-                    "text": "_DEVICE_NAME_ ambient temperature goes above _ARGUMENT_VALUE_ degrees"
-                }
-            }]
-        },
-        {
-            "id": 3,
-            "label": {
-                "lang_tag": "ambient_temperature_goes_below",
-                "text": "Ambient temperature goes below"
-            },
-            "serviceId": "urn:upnp-org:serviceId:TemperatureSensor1",
-            "norepeat": 1,
-            "argumentList": [{
-                "id": 1,
-                "dataType": "i4",
-                "name": "CurrentTemperature",
-                "comparisson": "<",
-                "prefix": {
-                    "lang_tag": "temperature",
-                    "text": "Temperature"
-                },
-                "suffix": {
-                    "lang_tag": "degrees",
-                    "text": "degrees"
-                },
-                "HumanFriendlyText": {
-                    "lang_tag": "hft_ambient_temperature_goes_below",
-                    "text": "_DEVICE_NAME_ ambient temperature goes below _ARGUMENT_VALUE_ degrees"
-                }
-            }]
-        },
-        {
-            "id": 4,
-            "label": {
-                "lang_tag": "thermostat_setpoint_goes_above",
-                "text": "Thermostat setpoint goes above"
-            },
-            "serviceId": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
-            "argumentList": [{
-                "id": 1,
-                "dataType": "i4",
-                "name": "CurrentSetpoint",
-                "comparisson": ">",
-                "prefix": {
-                    "lang_tag": "temperature",
-                    "text": "Temperature"
-                },
-                "suffix": {
-                    "lang_tag": "degrees",
-                    "text": "degrees"
-                },
-                "HumanFriendlyText": {
-                    "lang_tag": "colortouch__setpoint_above",
-                    "text": "_DEVICE_NAME_ setpoint goes above _ARGUMENT_VALUE_ degrees"
-                }
-            }]
-        },
-        {
-            "id": 5,
-            "label": {
-                "lang_tag": "thermostat_setpoint_goes_below",
-                "text": "Thermostat setpoint goes below"
-            },
-            "serviceId": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
-            "argumentList": [{
-                "id": 1,
-                "dataType": "i4",
-                "name": "CurrentSetpoint",
-                "comparisson": "<",
-                "prefix": {
-                    "lang_tag": "temperature",
-                    "text": "Temperature"
-                },
-                "suffix": {
-                    "lang_tag": "degrees",
-                    "text": "degrees"
-                },
-                "HumanFriendlyText": {
-                    "lang_tag": "colortouch__setpoint_below",
-                    "text": "_DEVICE_NAME_ setpoint goes below _ARGUMENT_VALUE_ degrees"
-                }
-            }]
-        },
-        {
-            "id": 6,
-            "label": {
-                "lang_tag": "colortouch_failed",
-                "text": "Communication Failure"
-            },
-            "serviceId": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
-            "serviceStateTable": {
-                "Failure": {
-                    "value": 0,
-                    "comparisson": ">"
-                }
-            },
-            "HumanFriendlyText": {
-                "lang_tag": "colortouch__commfail",
-                "text": "_DEVICE_NAME_ loses communication with the device"
-            }
-        },
-        {
-            "id": 7,
-            "label": {
-                "lang_tag": "colortouch_recovery",
-                "text": "Communication Restore"
-            },
-            "serviceId": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
-            "serviceStateTable": {
-                "Failure": {
-                    "value": 0,
-                    "comparisson": "="
-                }
-            },
-            "HumanFriendlyText": {
-                "lang_tag": "colortouch__commrestore",
-                "text": "_DEVICE_NAME_ restores communication with the device"
-            }
-        }
-    ],
-    "device_type": "urn:schemas-toggledbits-com:device:VenstarColorTouchThermostat:1"
+	"default_icon": "https://www.toggledbits.com/assets/venstar/colortouch_mode_default.png",
+	"state_icons": [{
+			"img": "https://www.toggledbits.com/assets/venstar/colortouch_failed.png",
+			"conditions": [{
+				"service": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
+				"variable": "Failure",
+				"operator": "==",
+				"value": 1
+			}]
+		},
+		{
+			"img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_off.png",
+			"conditions": [{
+				"service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+				"variable": "ModeState",
+				"operator": "==",
+				"value": "Off"
+			}]
+		},
+		{
+			"img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_idle.png",
+			"conditions": [{
+				"service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+				"variable": "ModeState",
+				"operator": "==",
+				"value": "Idle"
+			}]
+		},
+		{
+			"img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_cool.png",
+			"conditions": [{
+				"service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+				"variable": "ModeState",
+				"operator": "==",
+				"value": "Cooling"
+			}]
+		},
+		{
+			"img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_heat.png",
+			"conditions": [{
+				"service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+				"variable": "ModeState",
+				"operator": "==",
+				"value": "Heating"
+			}]
+		},
+		{
+			"img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_lockout.png",
+			"conditions": [{
+				"service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+				"variable": "ModeState",
+				"operator": "==",
+				"value": "Lockout"
+			}]
+		},
+		{
+			"img": "https://www.toggledbits.com/assets/venstar/colortouch_mode_fan.png",
+			"conditions": [{
+				"service": "urn:micasaverde-com:serviceId:HVAC_OperatingState1",
+				"variable": "ModeState",
+				"operator": "==",
+				"value": "FanOnly"
+			}]
+		}
+	],
+	"x": 2,
+	"y": 4,
+	"inScene": 1,
+	"Tabs": [{
+			"Label": {
+				"lang_tag": "tabname_control",
+				"text": "Control"
+			},
+			"Position": 0,
+			"TabType": "flash",
+			"top_navigation_tab": 1,
+			"ControlGroup": [{
+					"id": 1,
+					"scenegroup": 1
+				},
+				{
+					"id": 2,
+					"scenegroup": 2
+				},
+				{
+					"id": 3,
+					"scenegroup": 3
+				},
+				{
+					"id": 4,
+					"scenegroup": 4
+				}
+			],
+			"SceneGroup": [{
+					"id": 1,
+					"top": 0,
+					"left": 0,
+					"x": 1,
+					"y": 4
+				},
+				{
+					"id": 2,
+					"top": 0,
+					"left": 2,
+					"x": 2,
+					"y": 3
+				},
+				{
+					"id": 3,
+					"top": 0,
+					"left": "2.5",
+					"x": "0.5",
+					"y": 3
+				},
+				{
+					"id": 4,
+					"top": 3,
+					"left": 2,
+					"x": 1,
+					"y": 1
+				}
+			],
+			"Control": [{
+					"ControlType": "label",
+					"top": 0,
+					"left": 0,
+					"Label": {
+						"lang_tag": "colortouch_mode",
+						"text": "Mode"
+					},
+					"Display": {
+						"Top": 0,
+						"Left": 30,
+						"Width": 100,
+						"Height": 25
+					}
+				},
+				{
+					"ControlGroup": 1,
+					"ControlType": "button",
+					"top": 0,
+					"left": 0,
+					"Label": {
+						"lang_tag": "cmd_off",
+						"text": "Off"
+					},
+					"Display": {
+						"Top": 30,
+						"Left": 50,
+						"Width": 75,
+						"Height": 20,
+						"Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+						"Variable": "ModeStatus",
+						"Value": "Off"
+					},
+					"Command": {
+						"Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+						"Action": "SetModeTarget",
+						"Parameters": [{
+							"Name": "NewModeTarget",
+							"Value": "Off"
+						}]
+					},
+					"ControlCode": "hvac_off"
+				},
+				{
+					"ControlGroup": 1,
+					"ControlType": "button",
+					"top": 1,
+					"left": 0,
+					"Label": {
+						"lang_tag": "cmd_auto",
+						"text": "Auto"
+					},
+					"Display": {
+						"Top": 60,
+						"Left": 50,
+						"Width": 75,
+						"Height": 20,
+						"Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+						"Variable": "ModeStatus",
+						"Value": "AutoChangeOver"
+					},
+					"Command": {
+						"Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+						"Action": "SetModeTarget",
+						"Parameters": [{
+							"Name": "NewModeTarget",
+							"Value": "AutoChangeOver"
+						}]
+					},
+					"ControlCode": "hvac_auto"
+				},
+				{
+					"ControlGroup": 1,
+					"ControlType": "line_break"
+				},
+				{
+					"ControlGroup": 1,
+					"ControlType": "button",
+					"top": 2,
+					"left": 0,
+					"Label": {
+						"lang_tag": "cmd_cool",
+						"text": "Cool"
+					},
+					"Display": {
+						"Top": 30,
+						"Left": 150,
+						"Width": 75,
+						"Height": 20,
+						"Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+						"Variable": "ModeStatus",
+						"Value": "CoolOn"
+					},
+					"Command": {
+						"Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+						"Action": "SetModeTarget",
+						"Parameters": [{
+							"Name": "NewModeTarget",
+							"Value": "CoolOn"
+						}]
+					},
+					"ControlCode": "hvac_cool"
+				},
+				{
+					"ControlGroup": 1,
+					"ControlType": "button",
+					"top": 3,
+					"left": 0,
+					"Label": {
+						"lang_tag": "cmd_heat",
+						"text": "Heat"
+					},
+					"Display": {
+						"Top": 60,
+						"Left": 150,
+						"Width": 75,
+						"Height": 20,
+						"Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+						"Variable": "ModeStatus",
+						"Value": "HeatOn"
+					},
+					"Command": {
+						"Service": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+						"Action": "SetModeTarget",
+						"Parameters": [{
+							"Name": "NewModeTarget",
+							"Value": "HeatOn"
+						}]
+					},
+					"ControlCode": "hvac_heat"
+				},
+				{
+					"ControlGroup": 1,
+					"ControlType": "line_break"
+				},
+				{
+					"ControlGroup": 2,
+					"ControlType": "spinner_horizontal",
+					"top": 0,
+					"left": 2,
+					"ID": "NewSP",
+					"Style": "numeric",
+					"LabelUp": {
+						"lang_tag": "temperature_increase",
+						"text": "increase"
+					},
+					"LabelDown": {
+						"lang_tag": "temperature_decrease",
+						"text": "decrease"
+					},
+					"LabelSymbol": {
+						"lang_tag": "heater_label_symbol",
+						"text": "&deg;F"
+					},
+					"Display": {
+						"Service": "urn:upnp-org:serviceId:TemperatureSetpoint1_Heat",
+						"Variable": "CurrentSetpoint",
+						"MinValue": 35,
+						"MaxValue": 80,
+						"Step": 1.0,
+						"Editable": 1,
+						"InvalidInputMessage": {
+							"lang_tag": "tb_msg_heatsp",
+							"text": "Please enter a number between 35 and 80"
+						},
+						"Top": 0,
+						"Left": 270,
+						"Width": 100,
+						"Height": 25
+					},
+					"Command": {
+						"Service": "urn:upnp-org:serviceId:TemperatureSetpoint1_Heat",
+						"Action": "SetCurrentSetpoint",
+						"ActionArgumentName": "NewCurrentSetpoint"
+					},
+					"ControlCode": "venstar_setpoint_heat"
+				},
+				{
+					"ControlGroup": 2,
+					"ControlType": "spinner_horizontal",
+					"top": 0,
+					"left": 2,
+					"ID": "NewSP",
+					"Style": "numeric",
+					"LabelUp": {
+						"lang_tag": "temperature_increase",
+						"text": "increase"
+					},
+					"LabelDown": {
+						"lang_tag": "temperature_decrease",
+						"text": "decrease"
+					},
+					"LabelSymbol": {
+						"lang_tag": "heater_label_symbol",
+						"text": "&deg;F"
+					},
+					"Display": {
+						"Service": "urn:upnp-org:serviceId:TemperatureSetpoint1_Cool",
+						"Variable": "CurrentSetpoint",
+						"MinValue": 65,
+						"MaxValue": 99,
+						"Step": 1.0,
+						"Editable": 1,
+						"InvalidInputMessage": {
+							"lang_tag": "tb_msg_coolsp",
+							"text": "Please enter a number between 65 and 99"
+						},
+						"Top": 0,
+						"Left": 360,
+						"Width": 100,
+						"Height": 25
+					},
+					"Command": {
+						"Service": "urn:upnp-org:serviceId:TemperatureSetpoint1_Cool",
+						"Action": "SetCurrentSetpoint",
+						"ActionArgumentName": "NewCurrentSetpoint"
+					},
+					"ControlCode": "venstar_setpoint_cool"
+				},
+				{
+					"ControlType": "label",
+					"HorizontalMultiplier": "0.5",
+					"top": "0.1",
+					"left": 0,
+					"text_align": "left",
+					"Label": {
+						"lang_tag": "colortouch_fan",
+						"text": "Fan"
+					},
+					"Display": {
+						"Top": 90,
+						"Left": 30,
+						"Width": 80,
+						"Height": 25
+					},
+					"ControlCode": "fan_label"
+				},
+				{
+					"ControlType": "variable",
+					"HorizontalMultiplier": "0.5",
+					"top": "0.1",
+					"left": 1,
+					"Display": {
+						"Top": 90,
+						"Left": 90,
+						"Width": 120,
+						"Height": 25,
+						"Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
+						"Variable": "FanStatus"
+					},
+					"ControlCode": "hvac_fanstatus"
+				},
+				{
+					"ControlGroup": 4,
+					"ControlType": "variable",
+					"top": "0.2",
+					"left": 0,
+					"Display": {
+						"Top": 120,
+						"Left": 30,
+						"Width": 100,
+						"Height": 25,
+						"Service": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
+						"Variable": "DisplayTemperature"
+					},
+					"ControlCode": "colortouch_temp"
+				},
+				{
+					"ControlGroup": 4,
+					"ControlType": "line_break"
+				},
+				{
+					"ControlGroup": 4,
+					"ControlType": "variable",
+					"top": "0.5",
+					"left": 0,
+					"LabelSymbol": {
+						"lang_tag": "colortouch_status",
+						"text": "Status"
+					},
+					"Display": {
+						"Top": 0,
+						"Left": 150,
+						"Width": 320,
+						"Height": 25,
+						"Service": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
+						"Variable": "DisplayStatus"
+					},
+					"ControlCode": "colortouch_status"
+				},
+				{
+                    "ControlGroup": 3,
+					"ControlType": "multi_state_button",
+					"top": 0,
+					"left": 1,
+					"Display": {
+						"Top": 90,
+						"Left": 270,
+						"Width": 72,
+						"Height": 40
+					},
+					"states": [{
+							"Label": {
+								"lang_tag": "colortouch_fan_auto",
+								"text": "Fan Auto"
+							},
+							"Display": {
+								"Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
+								"Variable": "Mode",
+								"Value": "Auto"
+							},
+							"Command": {
+								"Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
+								"Action": "SetMode",
+								"Parameters": [{
+									"Name": "NewMode",
+									"Value": "Auto"
+								}]
+							},
+							"ControlCode": "colortouch_fanmode_auto"
+						},
+						{
+							"Label": {
+								"lang_tag": "colortouch_fan_on",
+								"text": "Fan On"
+							},
+							"Display": {
+								"Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
+								"Variable": "Mode",
+								"Value": "ContinuousOn"
+							},
+							"Command": {
+								"Service": "urn:upnp-org:serviceId:HVAC_FanOperatingMode1",
+								"Action": "SetMode",
+								"Parameters": [{
+									"Name": "NewMode",
+									"Value": "ContinuousOn"
+								}]
+							},
+							"ControlCode": "colortouch_fanmode_on"
+						}
+					],
+					"ControlCode": "colortouch_fanmode"
+				},
+				{
+					"ControlType": "label",
+					"top": "0.2",
+					"left": 0,
+					"Label": {
+						"lang_tag": "colortouch_about",
+						"text": "Venstar ColorTouch Interface v1.0 &copy; 2018 Patrick H. Rigney, All Rights Reserved.<br/><a href='http://www.toggledbits.com/venstar/'>http://www.toggledbits.com/venstar/</a>"
+					},
+					"Display": {
+						"Top": 180,
+						"Left": 30,
+						"Width": 300,
+						"Height": 25
+					},
+					"ControlCode": "tb_venstarcolortouch_about"
+				}
+			],
+			"Conditions": []
+		},
+		{
+			"Label": {
+				"lang_tag": "ui7_advanced",
+				"text": "Advanced"
+			},
+			"Position": 1,
+			"TabType": "javascript",
+			"ScriptName": "shared.js",
+			"Function": "advanced_device"
+		},
+		{
+			"Label": {
+				"lang_tag": "ui7_logs",
+				"text": "Logs"
+			},
+			"Position": 2,
+			"TabType": "javascript",
+			"ScriptName": "shared.js",
+			"Function": "device_logs"
+		},
+		{
+			"Label": {
+				"lang_tag": "ui7_notifications",
+				"text": "Notifications"
+			},
+			"Position": 3,
+			"TabType": "javascript",
+			"ScriptName": "shared.js",
+			"Function": "device_notifications"
+		},
+		{
+			"Label": {
+				"lang_tag": "ui7_device_scenes",
+				"text": "Scenes"
+			},
+			"Position": 4,
+			"TabType": "javascript",
+			"ScriptName": "shared.js",
+			"Function": "device_scenes"
+		}
+	],
+	"eventList2": [{
+			"id": 1,
+			"label": {
+				"lang_tag": "thermostat_mode_changes",
+				"text": "Thermostat Mode Changes"
+			},
+			"serviceId": "urn:upnp-org:serviceId:HVAC_UserOperatingMode1",
+			"argumentList": [{
+				"id": 1,
+				"dataType": "string",
+				"defaultValue": "",
+				"allowedValueList": [{
+						"Off": "Off",
+						"HumanFriendlyText": {
+							"lang_tag": "colortouch_turned_off",
+							"text": "_DEVICE_NAME_ is turned off"
+						}
+					},
+					{
+						"Cool": "CoolOn",
+						"HumanFriendlyText": {
+							"lang_tag": "colortouch_set_to_cool",
+							"text": "_DEVICE_NAME_ mode changed to cool"
+						}
+					},
+					{
+						"Heat": "HeatOn",
+						"HumanFriendlyText": {
+							"lang_tag": "colortouch_set_to_heat",
+							"text": "_DEVICE_NAME_ mode changed to heat"
+						}
+					},
+					{
+						"Auto": "AutoChangeOver",
+						"HumanFriendlyText": {
+							"lang_tag": "colortouch_set_to_auto",
+							"text": "_DEVICE_NAME_ mode changed to auto"
+						}
+					}
+				],
+				"name": "ModeTarget",
+				"comparisson": "=",
+				"prefix": {
+					"lang_tag": "mode",
+					"text": "Mode"
+				},
+				"suffix": {}
+			}]
+		},
+		{
+			"id": 2,
+			"label": {
+				"lang_tag": "ambient_temperature_goes_above",
+				"text": "Ambient temperature goes above"
+			},
+			"serviceId": "urn:upnp-org:serviceId:TemperatureSensor1",
+			"norepeat": 1,
+			"argumentList": [{
+				"id": 1,
+				"dataType": "i4",
+				"name": "CurrentTemperature",
+				"comparisson": ">",
+				"prefix": {
+					"lang_tag": "temperature",
+					"text": "Temperature"
+				},
+				"suffix": {
+					"lang_tag": "degrees",
+					"text": "degrees"
+				},
+				"HumanFriendlyText": {
+					"lang_tag": "hft_ambient_temperature_goes_above",
+					"text": "_DEVICE_NAME_ ambient temperature goes above _ARGUMENT_VALUE_ degrees"
+				}
+			}]
+		},
+		{
+			"id": 3,
+			"label": {
+				"lang_tag": "ambient_temperature_goes_below",
+				"text": "Ambient temperature goes below"
+			},
+			"serviceId": "urn:upnp-org:serviceId:TemperatureSensor1",
+			"norepeat": 1,
+			"argumentList": [{
+				"id": 1,
+				"dataType": "i4",
+				"name": "CurrentTemperature",
+				"comparisson": "<",
+				"prefix": {
+					"lang_tag": "temperature",
+					"text": "Temperature"
+				},
+				"suffix": {
+					"lang_tag": "degrees",
+					"text": "degrees"
+				},
+				"HumanFriendlyText": {
+					"lang_tag": "hft_ambient_temperature_goes_below",
+					"text": "_DEVICE_NAME_ ambient temperature goes below _ARGUMENT_VALUE_ degrees"
+				}
+			}]
+		},
+		{
+			"id": 4,
+			"label": {
+				"lang_tag": "thermostat_setpoint_goes_above",
+				"text": "Thermostat setpoint goes above"
+			},
+			"serviceId": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
+			"argumentList": [{
+				"id": 1,
+				"dataType": "i4",
+				"name": "CurrentSetpoint",
+				"comparisson": ">",
+				"prefix": {
+					"lang_tag": "temperature",
+					"text": "Temperature"
+				},
+				"suffix": {
+					"lang_tag": "degrees",
+					"text": "degrees"
+				},
+				"HumanFriendlyText": {
+					"lang_tag": "colortouch__setpoint_above",
+					"text": "_DEVICE_NAME_ setpoint goes above _ARGUMENT_VALUE_ degrees"
+				}
+			}]
+		},
+		{
+			"id": 5,
+			"label": {
+				"lang_tag": "thermostat_setpoint_goes_below",
+				"text": "Thermostat setpoint goes below"
+			},
+			"serviceId": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
+			"argumentList": [{
+				"id": 1,
+				"dataType": "i4",
+				"name": "CurrentSetpoint",
+				"comparisson": "<",
+				"prefix": {
+					"lang_tag": "temperature",
+					"text": "Temperature"
+				},
+				"suffix": {
+					"lang_tag": "degrees",
+					"text": "degrees"
+				},
+				"HumanFriendlyText": {
+					"lang_tag": "colortouch__setpoint_below",
+					"text": "_DEVICE_NAME_ setpoint goes below _ARGUMENT_VALUE_ degrees"
+				}
+			}]
+		},
+		{
+			"id": 6,
+			"label": {
+				"lang_tag": "colortouch_failed",
+				"text": "Communication Failure"
+			},
+			"serviceId": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
+			"serviceStateTable": {
+				"Failure": {
+					"value": 0,
+					"comparisson": ">"
+				}
+			},
+			"HumanFriendlyText": {
+				"lang_tag": "colortouch__commfail",
+				"text": "_DEVICE_NAME_ loses communication with the device"
+			}
+		},
+		{
+			"id": 7,
+			"label": {
+				"lang_tag": "colortouch_recovery",
+				"text": "Communication Restore"
+			},
+			"serviceId": "urn:toggledbits-com:serviceId:VenstarColorTouchThermostat1",
+			"serviceStateTable": {
+				"Failure": {
+					"value": 0,
+					"comparisson": "="
+				}
+			},
+			"HumanFriendlyText": {
+				"lang_tag": "colortouch__commrestore",
+				"text": "_DEVICE_NAME_ restores communication with the device"
+			}
+		}
+	],
+	"device_type": "urn:schemas-toggledbits-com:device:VenstarColorTouchThermostat:1"
 }
