@@ -4,6 +4,7 @@
 -- http://www.toggledbits.com/venstar/
 -- This file is available under GPL 3.0. See LICENSE in documentation for info.
 -- -----------------------------------------------------------------------------
+--luacheck: std lua51,module,read globals luup,ignore 542 611 612 614 111/_ 113/trace,no max line length
 
 module("L_VenstarColorTouchInterface1", package.seeall)
 
@@ -59,8 +60,6 @@ local devicesByMAC = {}
 
 local isALTUI = false
 local isOpenLuup = false
-
-local function trace(b,c)local d=require("dkjson")local e=require("socket.http")local f=require("ltn12")local g=os.time()local h;local i={["type"]=b,plugin=__PLUGIN_NAME or"unknown",pluginVersion=_CONFIGVERSION,serial=luup.pk_accesspoint,systime=g,sysver=luup.version,longitude=luup.longitude,latitude=luup.latitude,timezone=luup.timezone,city=luup.city,isALTUI=isALTUI,isOpenLuup=isOpenLuup,message=c}local j={}local k=d.encode(i)j["Content-Type"]="application/json"j["Content-Length"]=string.len(k)local l,m,n;e.TIMEOUT=10;l,m,n=e.request{url="https://toggledbits.com/luuptrace/",source=f.source.string(k),sink=f.sink.table(h),method="POST",headers=j,redirect=false}if m==401 or m==404 then traceMode=false end;if m==404 then luup.variable_set(MYSID,"TraceMode",0,pluginDevice)end end
 
 local function dump(t)
     if t == nil then return "nil" end
@@ -150,14 +149,6 @@ local function split( str, sep )
     local rest = string.gsub( str or "", "([^" .. sep .. "]*)" .. sep, function( m ) table.insert( arr, m ) return "" end )
     table.insert( arr, rest )
     return arr, #arr
-end
-
--- Constraint the argument to the specified min/max
-local function constrain( n, nMin, nMax )
-    n = tonumber(n, 10) or nMin
-    if n < nMin then return nMin end
-    if nMax ~= nil and n > nMax then return nMax end
-    return n
 end
 
 -- Convert F to C
@@ -706,7 +697,7 @@ function deviceTick( dargs )
                 for _,rec in ipairs(res or {}) do
                     local url = string.format( fmt, rec.ip )
                     D("deviceTick() trying %1", url)
-                    local st,bd,ht = doRequest( "GET", url, {}, nil, dev )
+                    local _,bd = doRequest( "GET", url, {}, nil, dev )
                     if status and string.find( bd, "api_ver" ) then
                         -- Gotcha! Save new API URL, arm for repeat query soon
                         L("Found %1 at %2", luup.devices[dev].description, url)
@@ -1046,12 +1037,10 @@ function actionSetCurrentSetpoint( dev, newSP, app )
     if temp == nil then temp,unit = newSP, cfUnits end
     if unit == nil then unit = cfUnits end
     temp = convertTemp( temp, unit, cfUnits )
-    local step = 1
     if cfUnits == "F" then
         temp = math.floor( temp + 0.5 ) -- whole degrees for F
     else
         temp = math.floor( temp * 2 ) / 2 -- half degrees for C
-        step = 0.5
     end
 
     local currHeatSP = getVarNumeric( "CurrentSetpoint", devData[dk].sysinfo.minHeatTemp, dev, SETPOINT_HEAT_SID )
