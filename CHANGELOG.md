@@ -2,6 +2,7 @@
 
 ## Version 1.2develop (develop branch) ##
 
+* Remove unused EnergyMode-related action.
 * Add declarations of Vera-specific setpoint services (...Setpoint1_Heat, ..._Cool), fixes UI issue with setpoint changes not working.
 
 ## Version 1.1 (released) ##
