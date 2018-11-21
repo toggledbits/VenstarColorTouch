@@ -1,6 +1,6 @@
 # Change Log for Venstar ColorTouch Plugin (Vera) #
 
-## Version 1.3-stable (stable development branch) ##
+## Version 1.3develop (development) ##
 
 * Remove unused EnergyMode-related action.
 
