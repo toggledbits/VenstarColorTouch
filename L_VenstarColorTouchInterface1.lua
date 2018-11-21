@@ -15,7 +15,7 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
-local _PLUGIN_VERSION = "1.2"
+local _PLUGIN_VERSION = "1.3-stable"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
 local _CONFIGVERSION = 010000
 
@@ -1076,13 +1076,6 @@ function actionSetCurrentSetpoint( dev, newSP, app )
         luup.variable_set( SETPOINT_HEAT_SID, "CurrentSetpoint", currHeatSP, dev )
     end
     return sendModeAndSetpoints( dev )
-end
-
--- Action to change energy mode (not implemented).
-function actionSetEnergyModeTarget( dev, newMode )
-    -- Store the target, but don't change status, because nothing changes, and signal failure.
-    luup.variable_set( OPMODE_SID, "EnergyModeTarget", newMode, dev )
-    return false
 end
 
 function actionSetHomeAway( dev, homeAway )
