@@ -1078,13 +1078,6 @@ function actionSetCurrentSetpoint( dev, newSP, app )
     return sendModeAndSetpoints( dev )
 end
 
--- Action to change energy mode (not implemented).
-function actionSetEnergyModeTarget( dev, newMode )
-    -- Store the target, but don't change status, because nothing changes, and signal failure.
-    luup.variable_set( OPMODE_SID, "EnergyModeTarget", newMode, dev )
-    return false
-end
-
 function actionSetHomeAway( dev, homeAway )
     if tostring(homeAway) == "0" or string.lower(homeAway) == "home" then
         homeAway = 0

@@ -46,29 +46,6 @@
                 -- Luup takes care of returning relatedStateVariable
             </run>
         </action>
-		<action>
-			<serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
-			<name>SetEnergyModeTarget</name>
-			<job>
-                local newMode = lul_settings.NewEnergyModeTarget
-                VenstarColorTouchInterface.actionSetEnergyModeTarget( lul_device, newMode )
-                return 4,0
-			</job>
-		</action>
-        <action>
-            <serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
-            <name>GetEnergyModeTarget</name>
-            <run>
-                -- Luup takes care of returning relatedStateVariable
-            </run>
-        </action>
-        <action>
-            <serviceId>urn:upnp-org:serviceId:HVAC_UserOperatingMode1</serviceId>
-            <name>GetEnergyModeStatus</name>
-            <run>
-                -- Luup takes care of returning relatedStateVariable
-            </run>
-        </action>
         <action>
             <serviceId>urn:upnp-org:serviceId:HVAC_FanOperatingMode1</serviceId>
             <name>SetMode</name>
