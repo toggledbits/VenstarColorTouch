@@ -18,7 +18,7 @@ local json = require("dkjson")
 local _PLUGIN_NAME = "VenstarColorTouchInterface"
 local _PLUGIN_VERSION = "1.3develop"
 local _PLUGIN_URL = "http://www.toggledbits.com/venstar"
-local _CONFIGVERSION = 010000
+local _CONFIGVERSION = 010001
 
 local debugMode = false
 local traceMode = false
@@ -139,7 +139,9 @@ local function setVar( sid, var, val, dev )
     local oldVal = luup.variable_get( sid, var, dev )
     if oldVal ~= val then
         luup.variable_set( sid, var, val, dev )
+        return oldVal, true
     end
+    return oldVal, false
 end
 
 local function split( str, sep )
@@ -174,6 +176,22 @@ local function convertTemp( inputTemp, inputUnits, outputUnits )
         inputTemp = FtoC( inputTemp )
     end
     return inputTemp
+end
+
+-- Get median of an array of values, return to prec decimals. The rounding makes
+-- it possible that the median can be less than or greater than the range of
+-- array values (e.g. median of 8.1 and 8.3 with prec=0 yields 8), so enforce 
+-- min/max from array value range. Returns median, min and max.
+local function median( a, prec )
+    local sum = 0
+    local mini = a[1]
+    local maxi = mini
+    for _,v in ipairs(a) do sum = sum + v if v < mini then mini = v elseif v > maxi then maxi = v end end
+    sum = sum / #a
+    local d = 10^prec
+    local ret = math.floor( sum * d + 0.5 ) / d
+    if ret < mini then ret = mini elseif ret > maxi then ret = maxi end
+    return ret, mini, maxi
 end
 
 local function askLuci(p)
@@ -375,7 +393,7 @@ local function doRequest(method, url, tHeaders, body, dev)
     else
         src = nil
     end
-    
+
     -- Basic Auth
     local baUser = luup.variable_get( DEVICESID, "HTTPUser", dev ) or ""
     if baUser ~= "" then
@@ -450,7 +468,7 @@ local function doInfoQuery( dev )
             devData[dk].sysinfo.units = tUnits
             if tUnits ~= cfUnits then
                 -- Reset configuration for temperature units configured.
-                L("Reconfiguring %1 (%2) from degrees %1 to %2, which will require a Luup restart.", 
+                L("Reconfiguring %1 (%2) from degrees %1 to %2, which will require a Luup restart.",
                     luup.devices[dev].description, dev, cfUnits, tUnits)
                 luup.variable_set( DEVICESID, "ConfiguredUnits", tUnits, dev )
                 luup.attr_set( "device_json", "D_VenstarColorTouchThermostat1_" .. tUnits .. ".json", dev )
@@ -468,7 +486,7 @@ local function doInfoQuery( dev )
         if data.state ~= nil then
             -- Map colortouch state to Vera.
             local state = ({ [0]="Idle", [1]="Heating", [2]="Cooling", [3]="Lockout", [4]="Error" })[data.state] or "Unknown"
-            if data.state == 0 and ( data.fanstate or 0 ) ~= 0 then state = "FanOnly" 
+            if data.state == 0 and ( data.fanstate or 0 ) ~= 0 then state = "FanOnly"
             elseif data.state == 0 and data.mode == 0 then state = "Off" end
             setVar( STATUS_SID, "ModeState", state, dev )
             -- If we can determine which setpoint is in effect, update it.
@@ -503,11 +521,14 @@ local function doInfoQuery( dev )
         if data.spacetemp ~= nil then
             setVar( TEMPSENS_SID, "CurrentTemperature", string.format( "%.1f", data.spacetemp ), dev )
         end
+        local spChanged = false
         if data.heattemp ~= nil then
-            setVar( SETPOINT_HEAT_SID, "CurrentSetpoint", data.heattemp, dev )
+            local _, changed = setVar( SETPOINT_HEAT_SID, "CurrentSetpoint", data.heattemp, dev )
+            spChanged = spChanged or changed
         end
         if data.cooltemp ~= nil then
-            setVar( SETPOINT_COOL_SID, "CurrentSetpoint", data.cooltemp, dev )
+            local _, changed = setVar( SETPOINT_COOL_SID, "CurrentSetpoint", data.cooltemp, dev )
+            spChanged = spChanged or changed
         end
         if data.cooltempmin ~= nil then
             devData[dk].sysinfo.minCoolTemp = data.cooltempmin
@@ -544,9 +565,16 @@ local function doInfoQuery( dev )
             -- Can always do "OFF"
             devData[dk].sysinfo.hasModes[MODE_OFF]=true
         end
-        
+
         -- Save it
         luup.variable_set( DEVICESID, "sysinfo", json.encode( devData[dk].sysinfo ), dev )
+        
+        -- Setpoint data?
+        if spChanged then
+            local hsp = getVarNumeric( "CurrentSetpoint", devData[dk].sysinfo.minHeatTemp, dev, SETPOINT_HEAT_SID )
+            local csp = getVarNumeric( "CurrentSetpoint", devData[dk].sysinfo.maxCoolTemp, dev, SETPOINT_COOL_SID )
+            setVar( SETPOINT_SID, "AllSetpoints", tostring(hsp)..","..tostring(csp)..","..tostring(median({hsp,csp},1)), dev )
+        end
     end
     return success
 end
@@ -586,7 +614,7 @@ local function handleDiscoveryMessage( msg )
         return
     end
     table.remove( parts, 1 ) -- pop HTTPU head off
-    
+
     -- Parse headers to table with lowercase keys
     local hr = {}
     for _,l in ipairs( parts ) do
@@ -596,7 +624,7 @@ local function handleDiscoveryMessage( msg )
             D("handleDiscoveryMessage() response header %1 is %2", string.lower(k), v)
         end
     end
-    
+
     -- Evaluate response headers
     if hr.st == nil or hr.st ~= "colortouch:ecp" then
         D("handleDiscoveryMessage() message is not for colortouch: %1", msg)
@@ -661,7 +689,7 @@ local function passGenericDiscovery( url, mac, ip, port, dev )
     mac = string.gsub( mac or "", "[%.:-]", "" ) -- remove various delimiters
     local nn = "ColorTouch " .. string.sub(mac, -6)
     mac = string.gsub( mac, "(..)(..)(..)(..)(..)(..)", "%1:%2:%3:%4:%5:%6" )
-    handleDiscoveryMessage( string.format("HTTP/1.1 200 OK\r\nCache-Control: max-age=300\r\nST: colortouch:ecp\r\nLocation: %s\r\nUSN: ecp:%s:name:%s", 
+    handleDiscoveryMessage( string.format("HTTP/1.1 200 OK\r\nCache-Control: max-age=300\r\nST: colortouch:ecp\r\nLocation: %s\r\nUSN: ecp:%s:name:%s",
             url, mac, nn) )
 end
 
@@ -764,7 +792,11 @@ local function deviceRunOnce( dev )
         luup.variable_set(DEVICESID, "Version", _CONFIGVERSION, dev)
         return
     end
---]]
+
+    if _CONFIGVERSION < 010001 then
+        initVar( SETPOINT_SID, "AllSetpoints", "", dev )
+        initVar( SETPOINT_SID, "AutoMode", "0", dev )
+    end
 
     -- No matter what happens above, if our versions don't match, force that here/now.
     if (rev ~= _CONFIGVERSION) then
@@ -933,7 +965,7 @@ local function launchDiscovery( dev )
     local mcastport = 1900
     local serviceType = "colortouch:ecp"
     local timeout = 10
-    
+
     -- Any of this can fail, and it's OK.
     local udp = socket.udp()
     -- udp:setoption('broadcast', true)
@@ -987,7 +1019,7 @@ local function doControl( body, dev, path )
 end
 
 local function sendModeAndSetpoints( dev )
-    -- CT firmware requires that mode change is accompanied by both heating and 
+    -- CT firmware requires that mode change is accompanied by both heating and
     -- cooling setpoints, and that the setpoints honor the delta. Make it so.
     local dk = tostring(dev)
     local mode = luup.variable_get( OPMODE_SID, "ModeTarget", dev )
@@ -1052,18 +1084,21 @@ function actionSetCurrentSetpoint( dev, newSP, app )
             luup.variable_set( SETPOINT_HEAT_SID, "CurrentSetpoint", currHeatSP, dev )
         end
         luup.variable_set( SETPOINT_COOL_SID, "CurrentSetpoint", temp, dev )
+        currCoolSP = temp
     elseif app == "Heating" then
         if ( currCoolSP - temp ) < devData[dk].sysinfo.delta then
             currCoolSP = temp + devData[dk].sysinfo.delta
             luup.variable_set( SETPOINT_COOL_SID, "CurrentSetpoint", currCoolSP, dev )
         end
         luup.variable_set( SETPOINT_HEAT_SID, "CurrentSetpoint", temp, dev )
+        currHeatSP = temp
     elseif app == "DualHeatingCooling" then
         currHeatSP = temp - math.floor( devData[dk].sysinfo.delta / 2 )
         currCoolSP = currHeatSP + devData[dk].sysinfo.delta
         luup.variable_set( SETPOINT_COOL_SID, "CurrentSetpoint", currCoolSP, dev )
         luup.variable_set( SETPOINT_HEAT_SID, "CurrentSetpoint", currHeatSP, dev )
     end
+    luup.variable_set( SETPOINT_SID, "AllSetpoints", tostring(currHeatSP)..","..tostring(currCoolSP)..","..tostring(median({currHeatSP,currCoolSP},1)), dev )
     return sendModeAndSetpoints( dev )
 end
 
@@ -1157,7 +1192,7 @@ function plugin_init(dev)
     devData = {}
     devData[tostring(dev)] = {}
     math.randomseed( os.time() )
-    
+
     if getVarNumeric( "DebugMode", 0, dev, MYSID ) ~= 0 then
         debugMode = true
     end
