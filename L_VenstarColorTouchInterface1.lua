@@ -51,7 +51,7 @@ local FANMODE_AUTO = "Auto"
 local FANMODE_ON = "ContinuousOn"
 
 -- Default refresh interval. This can be overridden by state variable RefreshInterval
-local DEFAULT_REFRESH = 60
+local DEFAULT_REFRESH = 30
 
 local pluginDevice
 local runStamp = {}
@@ -212,6 +212,14 @@ end
 
 -- Query UCI for WAN IP4 IP
 local function getSystemIP4Addr( dev )
+    if isOpenLuup then
+        local p = io.popen( "./toggledbits_utils.sh ip4info" ) or error("can't open toggledbits_utils.sh or error returned (ip4info)")
+        local s = split( p:read("*a") or "" )
+        p:close()
+        if #s < 3 then error("toggledbits_utils.sh returned invalid data for ip4info") end
+        s = s[1]:gsub( "/%d+$", "" ) -- handle CIDR format
+        return s;
+    end
     local vera_ip = askLuci("network.wan.ipaddr")
     D("getSystemIP4Addr() got %1 from Luci", vera_ip)
     if not vera_ip then
@@ -226,6 +234,26 @@ end
 
 -- Query UCI for WAN IP4 netmask
 local function getSystemIP4Mask( dev )
+    if isOpenLuup then
+        local p = io.popen( "./toggledbits_utils.sh ip4info" ) or error("can't open toggledbits_utils.sh or error returned (ip4info)")
+        local s = split( p:read("*a") or "" )
+        p:close()
+        if #s < 3 then error("toggledbits_utils.sh returned invalid data for ip4info") end
+        -- Handle CIDR address format
+        local len = s[1]:match( "/(%d+)$" )
+        if len then
+            local m = { 0, 0, 0, 0 }
+            local masks = { 0, 128, 192, 224, 240, 248, 252, 254, 255 }
+            for k=1,4 do
+                local l = math.min( len, 8 )
+                m[k] = masks[l+1]
+                len = len - l
+                if len <= 0 then break end
+            end
+            return string.format("%s.%s.%s.%s", unpack(m))
+        end
+        error("toggledbits_utils.sh return invalid CIDR format address: " .. s[1])
+    end
     local mask = askLuci("network.wan.netmask");
     D("getSystemIP4Mask() got %1 from Luci", mask)
     if not mask then
@@ -245,7 +273,16 @@ local function getSystemIP4BCast( dev )
         return broadcast
     end
 
-    -- Do it the hard way.
+    if isOpenLuup then
+        -- Util script MAY return broadcast as 2nd arg of ip4info; if not, we can make it the hard way.
+        local p = io.popen( "./toggledbits_utils.sh ip4info" ) or error("can't open toggledbits_utils.sh or error returned (ip4info)")
+        local s = split( p:read("*a") or "" )
+        p:close()
+        if #s < 3 then error("toggledbits_utils.sh returned invalid data for ip4info") end
+        if not s[2]:match( "^%s*%-%s*$" ) then return s[2] end 
+    end
+
+    -- Do it the hard way
     local vera_ip = getSystemIP4Addr( dev )
     local mask = getSystemIP4Mask( dev )
     D("getSystemIP4BCast() sys ip %1 netmask %2", vera_ip, mask)
@@ -265,8 +302,14 @@ end
 local function scanARP( dev, mac, ipaddr )
     D("scanARP(%1,%2,%3)", dev, mac, ipaddr)
 
-    -- Vera arp is a function defined in /etc/profile (currently). ??? Needs some flexibility here.
-    local pipe = io.popen("cat /proc/net/arp")
+    local pipe
+    if isOpenLuup then
+        -- Use helper script on openLuup
+        pipe = io.popen( "./toggledbits_utils.sh arplist" )
+    else
+        -- Vera arp is a function defined in /etc/profile (currently). ??? Needs some flexibility here.
+        pipe = io.popen("cat /proc/net/arp")
+    end
     local m = pipe:read("*a")
     pipe:close()
     local res = {}
@@ -296,19 +339,24 @@ end
 -- followed by an examination of the ARP table.
 local function getIPforMAC( mac, dev )
     D("getIPforMAC(%1,%2)", mac, dev)
-    assert(not isOpenLuup, "We don't know how to do this on openLuup, yet.")
     mac = mac:gsub("[%s:-]", ""):upper()
     local broadcast = getSystemIP4BCast( dev )
-    os.execute("/bin/ping -4 -q -c 3 -w 1 " .. broadcast)
+    if isOpenLuup then
+        os.execute( "./toggledbits_utils.sh pingb " .. broadcast )
+    else
+        os.execute("/bin/ping -4 -q -c 3 -w 1 " .. broadcast)
+    end
     return scanARP( dev, mac, nil )
 end
 
 -- Try to resolve IP address to a MAC address. Same process as above.
 local function getMACforIP( ipaddr, dev )
     D("getMACforIP(%1,%2)", ipaddr, dev)
-    if debugMode and isOpenLuup then return { { mac="74:D4:35:16:50:DE", ip=ipaddr } } end -- ???
-    assert(not isOpenLuup, "We don't know how to do this on openLuup, yet.")
-    os.execute("/bin/ping -4 -q -c 3 " .. ipaddr)
+    if isOpenLuup then
+        os.execute( "./toggledbits_utils.sh ping4 " .. ipaddr )
+    else
+        os.execute("/bin/ping -4 -q -c 3 " .. ipaddr)
+    end
     return scanARP( dev, nil, ipaddr )
 end
 
@@ -339,7 +387,7 @@ end
 local function gatewayStatus( msg )
     msg = msg or ""
     if msg ~= "" then L(msg) end -- don't clear clearing of status
-    luup.variable_set( MYSID, "DisplayStatus", msg, pluginDevice )
+    setVar( MYSID, "DisplayStatus", msg, pluginDevice )
 end
 
 -- Find WMP device by MAC address
@@ -506,7 +554,7 @@ local function doInfoQuery( dev )
         if data.schedulepart ~= nil then
         end
         if data.away ~= nil then
-            luup.variable_set( DEVICESID, "HomeAwayMode", ( data.away == 0 ) and "Home" or "Away", dev )
+            setVar( DEVICESID, "HomeAwayMode", ( data.away == 0 ) and "Home" or "Away", dev )
         end
         if data.holiday ~= nil then
             -- commercial only
@@ -585,13 +633,13 @@ local function updateDeviceStatus( dev )
     local cfUnits = luup.variable_get( DEVICESID, "ConfiguredUnits", dev ) or "F"
     local failed = getVarNumeric( "Failure", 0, dev, DEVICESID )
     if failed ~= 0 then
-        luup.variable_set( DEVICESID, "DisplayStatus", "Offline", dev )
-        luup.variable_set( DEVICESID, "DisplayTemperature", "--.-&deg;"..cfUnits, dev )
+        setVar( DEVICESID, "DisplayStatus", "Offline", dev )
+        setVar( DEVICESID, "DisplayTemperature", "--.-&deg;"..cfUnits, dev )
     else
         local msg = luup.variable_get( STATUS_SID, "ModeState", dev ) or "Unknown"
-        luup.variable_set( DEVICESID, "DisplayStatus", msg, dev )
+        setVar( DEVICESID, "DisplayStatus", msg, dev )
         local temp = luup.variable_get( TEMPSENS_SID, "CurrentTemperature", dev ) or "--.-"
-        luup.variable_set( DEVICESID, "DisplayTemperature", string.format( "%s&deg;%s", temp, cfUnits ), dev )
+        setVar( DEVICESID, "DisplayTemperature", string.format( "%s&deg;%s", temp, cfUnits ), dev )
     end
 end
 
@@ -710,7 +758,7 @@ function deviceTick( dargs )
     -- See if we received any data.
     local status, result = pcall( doInfoQuery, dev )
     if not ( status and result ) then
-        luup.variable_set( DEVICESID, "Failure", 1, dev )
+        setVar( DEVICESID, "Failure", 1, dev )
         if not status then
             L({level=1,msg="Update tick failed: %1"}, result)
         else
@@ -737,7 +785,7 @@ function deviceTick( dargs )
             end
         end
     elseif getVarNumeric( "Failure", 0, dev, DEVICESID ) ~= 0 then
-        luup.variable_set( DEVICESID, "Failure", 0, dev )
+        setVar( DEVICESID, "Failure", 0, dev )
         devData[tostring(dev)].numFails = 0
     end
 
@@ -1008,7 +1056,7 @@ local function doControl( body, dev, path )
     D("doControl() response status %1 data %2", status, resp)
     if status then
         if resp.error then
-            luup.variable_set( DEVICESID, "DisplayStatus", resp.reason or "control failed", dev )
+            setVar( DEVICESID, "DisplayStatus", resp.reason or "control failed", dev )
         else
             updateDeviceStatus( dev ) -- force display update, may happen again
             forceUpdate( dev )
@@ -1041,7 +1089,7 @@ function actionSetModeTarget( dev, newMode )
         L({level=2,msg="Unsupported mode requested for %1 (%2): %3"}, luup.devices[dev].description, dev, newMode)
         return false
     else
-        luup.variable_set( OPMODE_SID, "ModeTarget", newMode, dev )
+        setVar( OPMODE_SID, "ModeTarget", newMode, dev )
         return sendModeAndSetpoints( dev )
     end
 end
@@ -1051,7 +1099,7 @@ function actionSetFanMode( dev, newMode )
     D("actionSetFanMode(%1,%2)", dev, newMode)
     local xmap = { [FANMODE_AUTO]=0, [FANMODE_ON]=1 }
     if xmap[tostring(newMode)] ~= nil then
-        luup.variable_set( FANMODE_SID, "Mode", newMode, dev )
+        setVar( FANMODE_SID, "Mode", newMode, dev )
         return doControl( "fan=" .. ( xmap[newMode] or 0 ), dev )
     end
     return false
@@ -1081,24 +1129,24 @@ function actionSetCurrentSetpoint( dev, newSP, app )
     if app == "Cooling" then
         if ( temp - currHeatSP ) < devData[dk].sysinfo.delta then
             currHeatSP = temp - devData[dk].sysinfo.delta
-            luup.variable_set( SETPOINT_HEAT_SID, "CurrentSetpoint", currHeatSP, dev )
+            setVar( SETPOINT_HEAT_SID, "CurrentSetpoint", currHeatSP, dev )
         end
-        luup.variable_set( SETPOINT_COOL_SID, "CurrentSetpoint", temp, dev )
+        setVar( SETPOINT_COOL_SID, "CurrentSetpoint", temp, dev )
         currCoolSP = temp
     elseif app == "Heating" then
         if ( currCoolSP - temp ) < devData[dk].sysinfo.delta then
             currCoolSP = temp + devData[dk].sysinfo.delta
-            luup.variable_set( SETPOINT_COOL_SID, "CurrentSetpoint", currCoolSP, dev )
+            setVar( SETPOINT_COOL_SID, "CurrentSetpoint", currCoolSP, dev )
         end
-        luup.variable_set( SETPOINT_HEAT_SID, "CurrentSetpoint", temp, dev )
+        setVar( SETPOINT_HEAT_SID, "CurrentSetpoint", temp, dev )
         currHeatSP = temp
     elseif app == "DualHeatingCooling" then
         currHeatSP = temp - math.floor( devData[dk].sysinfo.delta / 2 )
         currCoolSP = currHeatSP + devData[dk].sysinfo.delta
-        luup.variable_set( SETPOINT_COOL_SID, "CurrentSetpoint", currCoolSP, dev )
-        luup.variable_set( SETPOINT_HEAT_SID, "CurrentSetpoint", currHeatSP, dev )
+        setVar( SETPOINT_COOL_SID, "CurrentSetpoint", currCoolSP, dev )
+        setVar( SETPOINT_HEAT_SID, "CurrentSetpoint", currHeatSP, dev )
     end
-    luup.variable_set( SETPOINT_SID, "AllSetpoints", tostring(currHeatSP)..","..tostring(currCoolSP)..","..tostring(median({currHeatSP,currCoolSP},1)), dev )
+    setVar( SETPOINT_SID, "AllSetpoints", tostring(currHeatSP)..","..tostring(currCoolSP)..","..tostring(median({currHeatSP,currCoolSP},1)), dev )
     return sendModeAndSetpoints( dev )
 end
 
@@ -1148,7 +1196,7 @@ end
 local function plugin_checkVersion(dev)
     assert(dev ~= nil)
     D("checkVersion() branch %1 major %2 minor %3, string %4, openLuup %5", luup.version_branch, luup.version_major, luup.version_minor, luup.version, isOpenLuup)
-    if isOpenLuup then return debugMode end
+    if isOpenLuup then return true end
     if ( luup.version_branch == 1 and luup.version_major >= 7 ) then
         local v = luup.variable_get( MYSID, "UI7Check", dev )
         if v == nil then luup.variable_set( MYSID, "UI7Check", "true", dev ) end
