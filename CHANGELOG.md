@@ -1,7 +1,8 @@
 # Change Log for Venstar ColorTouch Plugin (Vera) #
 
-## Version 1.3develop (development) ##
+## Version 1.3stable-190106 (stable) ##
 
+* Make sure AltUI test sees real device, not bridged.
 * Implement AllSetpoints state variable for user convenience.
 * Remove unused EnergyMode-related action.
 
