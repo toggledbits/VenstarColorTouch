@@ -42,9 +42,9 @@ case $OP in
     "ping4" )
         addr=${2:?address required}
         if [ "x$OS" = "xcentos" ]; then
-            /bin/ping -b -q -c 3 -w 1 $addr
+            /bin/ping -q -c 3 -w 1 $addr > /dev/null
         else
-            /bin/ping -q -c 3 -w 1 $addr
+            /bin/ping -q -c 3 -w 1 $addr > /dev/null
         fi
         ;;
     "pingb" )
@@ -52,10 +52,8 @@ case $OP in
         addr=${2:?address required}
         if [ "$OS" = "centos" ]; then
             /bin/ping -b -q -c 3 -w 1 $addr >/dev/null
-        elif [ "$OS" = "ubuntu" ]; then
-            /bin/ping -b -q -c 3 -w 1 $addr >/dev/null
         else
-            /bin/ping -4 -b -q -c 3 -w 1 $addr >/dev/null
+            /bin/ping -b -q -c 3 -w 1 $addr >/dev/null
         fi
         ;;
     "getuuid" )
