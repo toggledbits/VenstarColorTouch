@@ -1,7 +1,8 @@
 # Change Log for Venstar ColorTouch Plugin (Vera) #
 
-## Version 1.3-stable (stable development branch) ##
+## Version 1.3develop (development) ##
 
+* Implement AllSetpoints state variable for user convenience.
 * Remove unused EnergyMode-related action.
 
 ## Version 1.2 (released) ##
