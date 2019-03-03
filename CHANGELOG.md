@@ -1,6 +1,6 @@
 # Change Log for Venstar ColorTouch Plugin (Vera) #
 
-## Version 1.3develop (development) ##
+## Version 1.3 (released) ##
 
 * Make sure AltUI test sees real device, not bridged.
 * Implement AllSetpoints state variable for user convenience.
