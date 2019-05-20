@@ -1,6 +1,6 @@
 # Change Log for Venstar ColorTouch Plugin (Vera) #
 
-## Version 1.4 (development)
+## Version 1.4 (released)
 
 * Fix bug in detecting available modes on non-autochangeover thermostats.
 
