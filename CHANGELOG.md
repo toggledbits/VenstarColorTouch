@@ -1,5 +1,9 @@
 # Change Log for Venstar ColorTouch Plugin (Vera) #
 
+## Version 1.4 (development)
+
+* Fix bug in detecting available modes on non-autochangeover thermostats.
+
 ## Version 1.3 (released) ##
 
 * Make sure AltUI test sees real device, not bridged.
